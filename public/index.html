@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Smashing Magazie Service Worker</title>
+  </head>
+  <body>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/serviceWorker.js', {
+          scope: '/'
+        });
+      }
+    </script>
+    <script src="foo.js"></script>
+  </body>
+</html>
