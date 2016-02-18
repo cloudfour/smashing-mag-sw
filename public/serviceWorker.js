@@ -32,11 +32,11 @@ function fetchFromCache (request) {
 }
 
 addEventListener('install', event => {
-  // console.log('install');
+
 });
 
 addEventListener('activate', event => {
-  // console.log('activate');
+
 });
 
 addEventListener('fetch', event => {
@@ -44,6 +44,6 @@ addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   if (isCacheUrl(url)) {
-    console.log(`do something with ${url.pathname}`);
+
   }
 });
