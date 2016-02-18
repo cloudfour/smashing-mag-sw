@@ -2,18 +2,28 @@
 
 importScripts('SMCacheUtils.js');
 
-self.addEventListener('install', event => {
-  console.log('install');
+const VERSION = '0.0.1';
+const cachePaths = [
+  '/example.css'
+];
+
+const isCacheUrl = url => cachePaths.includes(url.pathname);
+const isLocalUrl = url => url.origin === location.origin;
+const isGetRequest = request => request.method === 'GET';
+
+addEventListener('install', event => {
+  // console.log('install');
 });
 
-self.addEventListener('activate', event => {
-  console.log('activate');
+addEventListener('activate', event => {
+  // console.log('activate');
 });
 
-self.addEventListener('fetch', event => {
-  const isScript = SMCacheUtils.isScriptUrl(event.request.url);
-  console.log(
-    'fetch',
-    `Is ${event.request.url} a script? ${isScript}`
-  )
+addEventListener('fetch', event => {
+  const request = event.request;
+  const url = new URL(request.url);
+
+  if (isCacheUrl(url)) {
+    console.log(`do something with ${url.pathname}`);
+  }
 });
