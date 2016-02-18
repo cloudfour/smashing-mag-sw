@@ -1,0 +1,22 @@
+{
+  "name": "smashing-mag-sw",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloudfour/smashing-mag-sw.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cloudfour/smashing-mag-sw/issues"
+  },
+  "homepage": "https://github.com/cloudfour/smashing-mag-sw#readme",
+  "devDependencies": {
+    "ava": "^0.12.0"
+  }
+}
