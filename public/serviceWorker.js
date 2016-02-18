@@ -1,17 +1,19 @@
 'use strict';
 
-importScripts('SMCacher.js');
+importScripts('SMCacheUtils.js');
 
 self.addEventListener('install', event => {
-  self.cacher = SMCacher();
+  console.log('install');
 });
 
 self.addEventListener('activate', event => {
-  self.cacher.init();
+  console.log('activate');
 });
 
 self.addEventListener('fetch', event => {
+  const isScript = SMCacheUtils.isScriptUrl(event.request.url);
   console.log(
-    `Is ${event.request.url} a script? ${isScriptUrl(event.request.url)}`
+    'fetch',
+    `Is ${event.request.url} a script? ${isScript}`
   )
 });
