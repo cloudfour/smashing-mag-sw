@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "http-server",
     "test": "ava test.js"
   },
   "repository": {
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/cloudfour/smashing-mag-sw#readme",
   "devDependencies": {
-    "ava": "^0.12.0"
+    "ava": "^0.12.0",
+    "http-server": "^0.8.5"
   }
 }
