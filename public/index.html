@@ -2,8 +2,10 @@
 <html>
   <head>
     <title>Smashing Magazie Service Worker</title>
+    <link rel="stylesheet" href="/example.css">
   </head>
   <body>
+    <img src="/jason.png">
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/serviceWorker.js', {
@@ -11,6 +13,5 @@
         });
       }
     </script>
-    <script src="foo.js"></script>
   </body>
 </html>
