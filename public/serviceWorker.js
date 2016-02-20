@@ -3,14 +3,12 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
-const TYPES = ['image', 'content'];
-const TYPES_DEFAULT = 'static';
 const cachePaths = [
   '/example.css',
-  '/jason.png'
+  '/assets/jason.png'
 ];
 
-const cacheName = key => `${VERSION}-${key}`;
+const cacheName = kind => `${VERSION}-${kind}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isCacheUrl = url => cachePaths.includes(url.pathname);
@@ -18,26 +16,33 @@ const isLocalUrl = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
 const requestType = request => request.headers.get('Accept');
 const responseType = response => response.headers.get('Content-Type');
+const resourceType = obj => (isRequest(obj) ? requestType : responseType)(obj);
+const resourceKind = obj => SMCacheUtils.resourceKind(resourceType(obj));
 
-const resourceType = function resourceType (obj) {
-  const mime = (isRequest(obj) ? requestType : responseType)(obj);
-  return TYPES.find(type => mime.includes(type)) || TYPES_DEFAULT;
+const shouldHandleRequest = function (request) {
+  const url = new URL(request.url);
+  const criteria = [
+    isCacheUrl(url),
+    isLocalUrl(url),
+    isGetRequest(request)
+  ];
+  return criteria.every(result => result);
 };
 
-const addToCache = function addToCache (request, response) {
-  const cacheKey = cacheName(resourceType(response));
-  caches.open(cacheKey).then(
-    cache => cache.put(request, response.clone())
-  );
+const cacheItem = function (request, response) {
+  const responseClone = response.clone();
+  const cacheKey = cacheName(resourceKind(response));
+  caches.open(cacheKey).then(cache => cache.put(request, responseClone));
   return response;
 };
 
-const getFromCache = function getFromCache (request) {
-  return caches.match(request);
+const cacheStaticItems = function () {
+  const cacheKey = cacheName('static');
+  return caches.open(cacheKey).then(cache => cache.addAll(cachePaths));
 };
 
 addEventListener('install', event => {
-  // precache stuff
+  event.waitUntil(cacheStaticItems().then(skipWaiting));
 });
 
 addEventListener('activate', event => {
@@ -46,9 +51,7 @@ addEventListener('activate', event => {
 
 addEventListener('fetch', event => {
   const request = event.request;
-  const url = new URL(request.url);
-
-  if (isCacheUrl(url)) {
-    // respond from cache, adding to it first if needed
+  if (shouldHandleRequest(request)) {
+    console.log(`${request.url} [${resourceKind(request)}] should be handled.`);
   }
 });
