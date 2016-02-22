@@ -27,7 +27,7 @@ const getResourceCategory = obj => {
   return SMCacheUtils.getMIMECategory(typeHeader);
 };
 
-const shouldHandleRequest = function (request) {
+const shouldHandleRequest = request => {
   const url = new URL(request.url);
   const criteria = [
     isCacheUrl(url),
@@ -37,7 +37,7 @@ const shouldHandleRequest = function (request) {
   return criteria.every(result => result);
 };
 
-const cacheRequestedItem = function (request, response) {
+const cacheRequestedItem = (request, response) => {
   const responseClone = response.clone();
   const category = getResourceCategory(response);
   const cacheKey = getCacheName(category);
@@ -47,7 +47,7 @@ const cacheRequestedItem = function (request, response) {
   return response;
 };
 
-const cacheStaticItems = function () {
+const cacheStaticItems = () => {
   const cacheKey = getCacheName('static');
   return caches.open(cacheKey).then(
     cache => cache.addAll(cacheablePaths)
