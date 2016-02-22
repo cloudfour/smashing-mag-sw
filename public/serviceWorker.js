@@ -39,14 +39,19 @@ const shouldHandleRequest = function (request) {
 
 const cacheRequestedItem = function (request, response) {
   const responseClone = response.clone();
-  const cacheKey = getCacheName(getResourceCategory(response));
-  caches.open(cacheKey).then(cache => cache.put(request, responseClone));
+  const category = getResourceCategory(response);
+  const cacheKey = getCacheName(category);
+  caches.open(cacheKey).then(
+    cache => cache.put(request, responseClone)
+  );
   return response;
 };
 
 const cacheStaticItems = function () {
   const cacheKey = getCacheName('static');
-  return caches.open(cacheKey).then(cache => cache.addAll(cacheablePaths));
+  return caches.open(cacheKey).then(
+    cache => cache.addAll(cacheablePaths)
+  );
 };
 
 addEventListener('install', event => {
