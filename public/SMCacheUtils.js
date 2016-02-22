@@ -24,6 +24,7 @@ const SMCacheUtils = {
 
   getMIMECategory (mimeType) {
     const keys = Object.keys(MIME_TYPES);
+    // Attempts to use [].includes() here resulted in Node errors. Supported?
     return keys.find(key => MIME_TYPES[key].indexOf(mimeType) !== -1);
   }
 };
