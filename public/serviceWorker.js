@@ -8,22 +8,22 @@ const cacheablePaths = [
   '/assets/jason.png'
 ];
 
-const cacheName = key => `${VERSION}-${key}`;
+const getCacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isCacheUrl = url => cacheablePaths.includes(url.pathname);
 const isLocalUrl = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
-const requestTypeHeader = request => request.headers.get('Accept');
-const responseTypeHeader = response => response.headers.get('Content-Type');
+const getRequestTypeHeader = request => request.headers.get('Accept');
+const getResponseTypeHeader = response => response.headers.get('Content-Type');
 
-const resourceTypeHeader = obj => {
-  const handlerFn = isRequest(obj) ? requestTypeHeader : responseTypeHeader;
+const getResourceTypeHeader = obj => {
+  const handlerFn = isRequest(obj) ? getRequestTypeHeader : getResponseTypeHeader;
   return handlerFn(obj);
 }
 
-const resourceCategory = obj => {
-  const typeHeader = resourceTypeHeader(obj);
+const getResourceCategory = obj => {
+  const typeHeader = getResourceTypeHeader(obj);
   return SMCacheUtils.getMIMECategory(typeHeader);
 }
 
@@ -39,13 +39,13 @@ const shouldHandleRequest = function (request) {
 
 const cacheRequestedItem = function (request, response) {
   const responseClone = response.clone();
-  const cacheKey = cacheName(resourceCategory(response));
+  const cacheKey = getCacheName(getResourceCategory(response));
   caches.open(cacheKey).then(cache => cache.put(request, responseClone));
   return response;
 };
 
 const cacheStaticItems = function () {
-  const cacheKey = cacheName('static');
+  const cacheKey = getCacheName('static');
   return caches.open(cacheKey).then(cache => cache.addAll(cacheablePaths));
 };
 
@@ -60,6 +60,6 @@ addEventListener('activate', event => {
 addEventListener('fetch', event => {
   const request = event.request;
   if (shouldHandleRequest(request)) {
-    console.log(`${request.url} [${resourceCategory(request)}] should be handled.`);
+
   }
 });
