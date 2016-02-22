@@ -20,12 +20,12 @@ const getResponseTypeHeader = response => response.headers.get('Content-Type');
 const getResourceTypeHeader = obj => {
   if (isRequest(obj)) return getRequestTypeHeader(obj);
   if (isResponse(obj)) return getResponseTypeHeader(obj);
-}
+};
 
 const getResourceCategory = obj => {
   const typeHeader = getResourceTypeHeader(obj);
   return SMCacheUtils.getMIMECategory(typeHeader);
-}
+};
 
 const shouldHandleRequest = function (request) {
   const url = new URL(request.url);
