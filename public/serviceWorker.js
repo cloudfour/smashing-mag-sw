@@ -3,7 +3,7 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
-const cachePaths = [
+const cacheablePaths = [
   '/example.css',
   '/assets/jason.png'
 ];
@@ -11,7 +11,7 @@ const cachePaths = [
 const cacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isCacheUrl = url => cachePaths.includes(url.pathname);
+const isCacheUrl = url => cacheablePaths.includes(url.pathname);
 const isLocalUrl = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
 const requestTypeHeader = request => request.headers.get('Accept');
@@ -46,7 +46,7 @@ const cacheItem = function (request, response) {
 
 const cacheStaticItems = function () {
   const cacheKey = cacheName('static');
-  return caches.open(cacheKey).then(cache => cache.addAll(cachePaths));
+  return caches.open(cacheKey).then(cache => cache.addAll(cacheablePaths));
 };
 
 addEventListener('install', event => {
