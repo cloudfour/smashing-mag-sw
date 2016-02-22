@@ -37,7 +37,7 @@ const shouldHandleRequest = function (request) {
   return criteria.every(result => result);
 };
 
-const cacheItem = function (request, response) {
+const cacheRequestedItem = function (request, response) {
   const responseClone = response.clone();
   const cacheKey = cacheName(resourceCategory(response));
   caches.open(cacheKey).then(cache => cache.put(request, responseClone));
