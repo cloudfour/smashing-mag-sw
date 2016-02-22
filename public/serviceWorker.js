@@ -40,16 +40,16 @@ const shouldHandleRequest = request => {
 const cacheRequestedItem = (request, response) => {
   const responseClone = response.clone();
   const category = getResourceCategory(response);
-  const cacheKey = getCacheName(category);
-  caches.open(cacheKey).then(
+  const cacheName = getCacheName(category);
+  caches.open(cacheName).then(
     cache => cache.put(request, responseClone)
   );
   return response;
 };
 
 const cacheStaticItems = () => {
-  const cacheKey = getCacheName('static');
-  return caches.open(cacheKey).then(
+  const cacheName = getCacheName('static');
+  return caches.open(cacheName).then(
     cache => cache.addAll(cacheablePaths)
   );
 };
