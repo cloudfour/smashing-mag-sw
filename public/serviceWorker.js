@@ -17,7 +17,7 @@ const isGetRequest = request => request.method === 'GET';
 const requestType = request => request.headers.get('Accept');
 const responseType = response => response.headers.get('Content-Type');
 const resourceType = obj => (isRequest(obj) ? requestType : responseType)(obj);
-const resourceKind = obj => SMCacheUtils.resourceKind(resourceType(obj));
+const resourceKind = obj => SMCacheUtils.getMIMECategory(resourceType(obj));
 
 const shouldHandleRequest = function (request) {
   const url = new URL(request.url);
