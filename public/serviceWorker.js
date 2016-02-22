@@ -8,7 +8,7 @@ const cachePaths = [
   '/assets/jason.png'
 ];
 
-const cacheName = kind => `${VERSION}-${kind}`;
+const cacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isCacheUrl = url => cachePaths.includes(url.pathname);
