@@ -14,10 +14,18 @@ const isResponse = obj => obj instanceof Response;
 const isCacheUrl = url => cachePaths.includes(url.pathname);
 const isLocalUrl = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
-const requestType = request => request.headers.get('Accept');
-const responseType = response => response.headers.get('Content-Type');
-const resourceType = obj => (isRequest(obj) ? requestType : responseType)(obj);
-const resourceKind = obj => SMCacheUtils.getMIMECategory(resourceType(obj));
+const requestTypeHeader = request => request.headers.get('Accept');
+const responseTypeHeader = response => response.headers.get('Content-Type');
+
+const resourceTypeHeader = obj => {
+  const handlerFn = isRequest(obj) ? requestTypeHeader : responseTypeHeader;
+  return handlerFn(obj);
+}
+
+const resourceCategory = obj => {
+  const typeHeader = resourceTypeHeader(obj);
+  return SMCacheUtils.getMIMECategory(typeHeader);
+}
 
 const shouldHandleRequest = function (request) {
   const url = new URL(request.url);
@@ -31,7 +39,7 @@ const shouldHandleRequest = function (request) {
 
 const cacheItem = function (request, response) {
   const responseClone = response.clone();
-  const cacheKey = cacheName(resourceKind(response));
+  const cacheKey = cacheName(resourceCategory(response));
   caches.open(cacheKey).then(cache => cache.put(request, responseClone));
   return response;
 };
@@ -52,6 +60,6 @@ addEventListener('activate', event => {
 addEventListener('fetch', event => {
   const request = event.request;
   if (shouldHandleRequest(request)) {
-    console.log(`${request.url} [${resourceKind(request)}] should be handled.`);
+    console.log(`${request.url} [${resourceCategory(request)}] should be handled.`);
   }
 });
