@@ -37,25 +37,25 @@ const shouldHandleRequest = request => {
   return criteria.every(result => result);
 };
 
-const cacheRequestedItem = (request, response) => {
+const cacheRequestedItem = (request, response, cacheName) => {
   const responseClone = response.clone();
-  const category = getResourceCategory(response);
-  const cacheName = getCacheName(category);
   caches.open(cacheName).then(
     cache => cache.put(request, responseClone)
   );
   return response;
 };
 
-const cacheStaticItems = () => {
-  const cacheName = getCacheName('static');
+const cacheAllPaths = (paths, cacheName) => {
   return caches.open(cacheName).then(
-    cache => cache.addAll(cacheablePaths)
+    cache => cache.addAll(paths)
   );
 };
 
 addEventListener('install', event => {
-  event.waitUntil(cacheStaticItems().then(skipWaiting));
+  const cacheName = getCacheName('static');
+  event.waitUntil(
+    cacheAllPaths(cacheablePaths, cacheName).then(skipWaiting)
+  );
 });
 
 addEventListener('activate', event => {
