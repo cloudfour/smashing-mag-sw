@@ -18,8 +18,8 @@ const getRequestTypeHeader = request => request.headers.get('Accept');
 const getResponseTypeHeader = response => response.headers.get('Content-Type');
 
 const getResourceTypeHeader = obj => {
-  const handlerFn = isRequest(obj) ? getRequestTypeHeader : getResponseTypeHeader;
-  return handlerFn(obj);
+  if (isRequest(obj)) return getRequestTypeHeader(obj);
+  if (isResponse(obj)) return getResponseTypeHeader(obj);
 }
 
 const getResourceCategory = obj => {
