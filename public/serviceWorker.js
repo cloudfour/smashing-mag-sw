@@ -11,8 +11,8 @@ const cacheablePaths = [
 const getCacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isCacheUrl = url => cacheablePaths.includes(url.pathname);
-const isLocalUrl = url => url.origin === location.origin;
+const isCacheableURL = url => cacheablePaths.includes(url.pathname);
+const isLocalURL = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
 const getRequestTypeHeader = request => request.headers.get('Accept');
 const getResponseTypeHeader = response => response.headers.get('Content-Type');
@@ -49,21 +49,21 @@ const getResourceCategory = obj => {
 };
 
 /**
- * shouldHandleRequest receives a Request instance and returns true or false
+ * isRequestCacheable receives a Request instance and returns true or false
  * depending on the properties of its URL and header values.
  *
  * @param {Request} request
  * @return {Boolean}
  * @example
  *
- *    shouldHandleRequest(siteLogoRequest); // => true
- *    shouldHandleRequest(thirdPartyScriptRequest); // => false
+ *    isRequestCacheable(siteLogoRequest); // => true
+ *    isRequestCacheable(thirdPartyScriptRequest); // => false
  */
-const shouldHandleRequest = request => {
+const isRequestCacheable = request => {
   const url = new URL(request.url);
   const criteria = [
-    isCacheUrl(url),
-    isLocalUrl(url),
+    isCacheableURL(url),
+    isLocalURL(url),
     isGetRequest(request)
   ];
   return criteria.every(result => result);
@@ -117,7 +117,7 @@ addEventListener('activate', event => {
 
 addEventListener('fetch', event => {
   const request = event.request;
-  if (shouldHandleRequest(request)) {
+  if (isRequestCacheable(request)) {
 
   }
 });
