@@ -3,41 +3,112 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
-const TYPES = ['image', 'content'];
-const TYPES_DEFAULT = 'static';
-const cachePaths = [
+const cacheablePaths = [
   '/example.css',
-  '/jason.png'
+  '/assets/jason.png'
 ];
 
-const cacheName = key => `${VERSION}-${key}`;
+const getCacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isCacheUrl = url => cachePaths.includes(url.pathname);
+const isCacheUrl = url => cacheablePaths.includes(url.pathname);
 const isLocalUrl = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
-const requestType = request => request.headers.get('Accept');
-const responseType = response => response.headers.get('Content-Type');
+const getRequestTypeHeader = request => request.headers.get('Accept');
+const getResponseTypeHeader = response => response.headers.get('Content-Type');
 
-const resourceType = function resourceType (obj) {
-  const mime = (isRequest(obj) ? requestType : responseType)(obj);
-  return TYPES.find(type => mime.includes(type)) || TYPES_DEFAULT;
+/**
+ * getResourceTypeHeader receives a Request or Response instance, and returns a
+ * header value indicating the MIME-type of that object.
+ *
+ * @param {Request|Response} obj
+ * @return {String}
+ * @example
+ *
+ *    getResourceTypeHeader(cssRequest); // => 'text/css'
+ */
+const getResourceTypeHeader = obj => {
+  if (isRequest(obj)) return getRequestTypeHeader(obj);
+  if (isResponse(obj)) return getResponseTypeHeader(obj);
 };
 
-const addToCache = function addToCache (request, response) {
-  const cacheKey = cacheName(resourceType(response));
-  caches.open(cacheKey).then(
-    cache => cache.put(request, response.clone())
+/**
+ * getResourceCategory receives a Request or Response instance, and returns a
+ * generic category for the MIME-type of that object. See SMCacheUtils.js for
+ * the potential category values.
+ *
+ * @param {Request|Response} obj
+ * @return {String}
+ * @example
+ *
+ *    getResourceCategory(htmlResponse); // => 'content'
+ */
+const getResourceCategory = obj => {
+  const typeHeader = getResourceTypeHeader(obj);
+  return SMCacheUtils.getMIMECategory(typeHeader);
+};
+
+/**
+ * shouldHandleRequest receives a Request instance and returns true or false
+ * depending on the properties of its URL and header values.
+ *
+ * @param {Request} request
+ * @return {Boolean}
+ * @example
+ *
+ *    shouldHandleRequest(siteLogoRequest); // => true
+ *    shouldHandleRequest(thirdPartyScriptRequest); // => false
+ */
+const shouldHandleRequest = request => {
+  const url = new URL(request.url);
+  const criteria = [
+    isCacheUrl(url),
+    isLocalUrl(url),
+    isGetRequest(request)
+  ];
+  return criteria.every(result => result);
+};
+
+/**
+ * cacheRequestedItem adds to or updates the cache with a new Response before
+ * returning it.
+ *
+ * TODO: Explain this better.
+ *
+ * @param {Request} request
+ * @param {Response} response
+ * @param {String} cacheName
+ * @return {Response}
+ */
+const cacheRequestedItem = (request, response, cacheName) => {
+  const responseClone = response.clone();
+  caches.open(cacheName).then(
+    cache => cache.put(request, responseClone)
   );
   return response;
 };
 
-const getFromCache = function getFromCache (request) {
-  return caches.match(request);
+/**
+ * cacheAllPaths receives an array of filepaths to cache all at once. It returns
+ * a promise that will resolve when those items have been cached.
+ *
+ * TODO: Explain this better.
+ *
+ * @param {Array} paths
+ * @param {String} cacheName
+ * @return {Promise}
+ */
+const cacheAllPaths = (paths, cacheName) => {
+  return caches.open(cacheName).then(
+    cache => cache.addAll(paths)
+  );
 };
 
 addEventListener('install', event => {
-  // precache stuff
+  const cacheName = getCacheName('static');
+  event.waitUntil(
+    cacheAllPaths(cacheablePaths, cacheName).then(skipWaiting)
+  );
 });
 
 addEventListener('activate', event => {
@@ -46,9 +117,7 @@ addEventListener('activate', event => {
 
 addEventListener('fetch', event => {
   const request = event.request;
-  const url = new URL(request.url);
+  if (shouldHandleRequest(request)) {
 
-  if (isCacheUrl(url)) {
-    // respond from cache, adding to it first if needed
   }
 });
