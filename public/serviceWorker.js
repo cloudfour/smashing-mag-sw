@@ -17,16 +17,48 @@ const isGetRequest = request => request.method === 'GET';
 const getRequestTypeHeader = request => request.headers.get('Accept');
 const getResponseTypeHeader = response => response.headers.get('Content-Type');
 
+/**
+ * getResourceTypeHeader receives a Request or Response instance, and returns a
+ * header value indicating the MIME-type of that object.
+ *
+ * @param {Request|Response} obj
+ * @return {String}
+ * @example
+ *
+ *    getResourceTypeHeader(cssRequest); // => 'text/css'
+ */
 const getResourceTypeHeader = obj => {
   if (isRequest(obj)) return getRequestTypeHeader(obj);
   if (isResponse(obj)) return getResponseTypeHeader(obj);
 };
 
+/**
+ * getResourceCategory receives a Request or Response instance, and returns a
+ * generic category for the MIME-type of that object. See SMCacheUtils.js for
+ * the potential category values.
+ *
+ * @param {Request|Response} obj
+ * @return {String}
+ * @example
+ *
+ *    getResourceCategory(htmlResponse); // => 'content'
+ */
 const getResourceCategory = obj => {
   const typeHeader = getResourceTypeHeader(obj);
   return SMCacheUtils.getMIMECategory(typeHeader);
 };
 
+/**
+ * shouldHandleRequest receives a Request instance and returns true or false
+ * depending on the properties of its URL and header values.
+ *
+ * @param {Request} request
+ * @return {Boolean}
+ * @example
+ *
+ *    shouldHandleRequest(siteLogoRequest); // => true
+ *    shouldHandleRequest(thirdPartyScriptRequest); // => false
+ */
 const shouldHandleRequest = request => {
   const url = new URL(request.url);
   const criteria = [
@@ -37,6 +69,17 @@ const shouldHandleRequest = request => {
   return criteria.every(result => result);
 };
 
+/**
+ * cacheRequestedItem adds to or updates the cache with a new Response before
+ * returning it.
+ *
+ * TODO: Explain this better.
+ *
+ * @param {Request} request
+ * @param {Response} response
+ * @param {String} cacheName
+ * @return {Response}
+ */
 const cacheRequestedItem = (request, response, cacheName) => {
   const responseClone = response.clone();
   caches.open(cacheName).then(
@@ -45,6 +88,16 @@ const cacheRequestedItem = (request, response, cacheName) => {
   return response;
 };
 
+/**
+ * cacheAllPaths receives an array of filepaths to cache all at once. It returns
+ * a promise that will resolve when those items have been cached.
+ *
+ * TODO: Explain this better.
+ *
+ * @param {Array} paths
+ * @param {String} cacheName
+ * @return {Promise}
+ */
 const cacheAllPaths = (paths, cacheName) => {
   return caches.open(cacheName).then(
     cache => cache.addAll(paths)
