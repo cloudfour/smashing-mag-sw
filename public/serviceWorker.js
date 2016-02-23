@@ -8,7 +8,7 @@ const cacheablePaths = [
   '/assets/jason.png'
 ];
 
-const getCacheName = key => `${VERSION}-${key}`;
+const toCacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isCacheableURL = url => cacheablePaths.includes(url.pathname);
@@ -105,7 +105,7 @@ const cacheAllPaths = (paths, cacheName) => {
 };
 
 addEventListener('install', event => {
-  const cacheName = getCacheName('static');
+  const cacheName = toCacheName('static');
   event.waitUntil(
     cacheAllPaths(cacheablePaths, cacheName).then(skipWaiting)
   );
