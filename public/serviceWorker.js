@@ -138,12 +138,27 @@ addEventListener('install', event => {
 });
 
 addEventListener('activate', event => {
-  // invalidate old caches
+  event.waitUntil(
+    cleanupCachedItems().then(clients.claim())
+  );
 });
 
 addEventListener('fetch', event => {
   const request = event.request;
   if (isRequestCacheable(request)) {
-
+    let category = getResourceCategory(request);
+    let cacheName = toCacheName(category);
+    let respondFn;
+    switch (category) {
+      case 'content':
+        respondFn = fetch(request).then(response => {
+          return cacheRequestedItem(response, request, cacheName)
+        });
+        break;
+      default:
+        respondFn = caches.match(request);
+        break;
+    }
+    event.respondWith(respondFn);
   }
 });
