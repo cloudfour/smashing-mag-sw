@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "http-server",
+    "start": "http-server ./",
     "test": "ava test.js"
   },
   "repository": {
