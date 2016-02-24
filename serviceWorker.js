@@ -8,7 +8,7 @@ const cacheablePaths = [
   '/suitcss.css',
   '/assets/pic1.jpg',
   '/assets/pic2.jpg',
-  '/assets/pic3.jpg',
+  '/assets/pic3.jpg'
 ];
 
 const toCacheName = key => `${VERSION}-${key}`;
@@ -16,9 +16,9 @@ const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isLocalURL = url => url.origin === location.origin;
-const isGetRequest = request => request.method === 'GET';
-const getRequestTypeHeader = request => request.headers.get('Accept');
-const getResponseTypeHeader = response => response.headers.get('Content-Type');
+const isGetRequest = req => req.method === 'GET';
+const getRequestTypeHeader = req => req.headers.get('Accept');
+const getResponseTypeHeader = res => res.headers.get('Content-Type');
 
 const isCacheableURL = url => {
   const isPathIncluded = cacheablePaths.includes(url.pathname);
