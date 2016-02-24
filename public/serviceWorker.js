@@ -12,6 +12,7 @@ const cacheablePaths = [
 ];
 
 const toCacheName = key => `${VERSION}-${key}`;
+const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isLocalURL = url => url.origin === location.origin;
@@ -110,6 +111,23 @@ const cacheAllPaths = (paths, cacheName) => {
   return caches.open(cacheName).then(
     cache => cache.addAll(paths)
   );
+};
+
+/**
+ * cleanupCachedItems finds and deletes cached items that are outdated based on
+ * VERSION. It returns a promise that resolves once all of the items have been
+ * deleted from the cache.
+ *
+ * TODO: Explain this better, and maybe split into two functions.
+ *
+ * @return {Promise}
+ */
+const cleanupCachedItems = () => {
+  return caches.keys().then(cacheKeys => {
+    const expiredKeys = cacheKeys.filter(key => !isCacheName(key));
+    const deletions = expiredKeys.map(key => caches.delete(key));
+    return Promise.all(deletions);
+  });
 };
 
 addEventListener('install', event => {
