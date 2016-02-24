@@ -5,10 +5,10 @@ importScripts('SMCacheUtils.js');
 const VERSION = '0.0.1';
 const cacheablePattern = /\.html$/;
 const cacheablePaths = [
-  '/suitcss.css',
-  '/assets/pic1.jpg',
-  '/assets/pic2.jpg',
-  '/assets/pic3.jpg'
+  'suitcss.css',
+  'assets/pic1.jpg',
+  'assets/pic2.jpg',
+  'assets/pic3.jpg'
 ];
 
 const toCacheName = key => `${VERSION}-${key}`;
