@@ -3,19 +3,27 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
+const cacheablePattern = /\.html$/;
 const cacheablePaths = [
-  '/example.css',
-  '/assets/jason.png'
+  '/suitcss.css',
+  '/assets/pic1.jpg',
+  '/assets/pic2.jpg',
+  '/assets/pic3.jpg',
 ];
 
 const toCacheName = key => `${VERSION}-${key}`;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isCacheableURL = url => cacheablePaths.includes(url.pathname);
 const isLocalURL = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
 const getRequestTypeHeader = request => request.headers.get('Accept');
 const getResponseTypeHeader = response => response.headers.get('Content-Type');
+
+const isCacheableURL = url => {
+  const isPathIncluded = cacheablePaths.includes(url.pathname);
+  const isURLMatching = cacheablePattern.test(url);
+  return isPathIncluded || isURLMatching;
+};
 
 /**
  * getResourceTypeHeader receives a Request or Response instance, and returns a
