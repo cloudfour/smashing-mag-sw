@@ -3,19 +3,28 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
+const cacheablePattern = /\.html$/;
 const cacheablePaths = [
-  '/example.css',
-  '/assets/jason.png'
+  '/suitcss.css',
+  '/assets/pic1.jpg',
+  '/assets/pic2.jpg',
+  '/assets/pic3.jpg',
 ];
 
-const getCacheName = key => `${VERSION}-${key}`;
+const toCacheName = key => `${VERSION}-${key}`;
+const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isCacheUrl = url => cacheablePaths.includes(url.pathname);
-const isLocalUrl = url => url.origin === location.origin;
+const isLocalURL = url => url.origin === location.origin;
 const isGetRequest = request => request.method === 'GET';
 const getRequestTypeHeader = request => request.headers.get('Accept');
 const getResponseTypeHeader = response => response.headers.get('Content-Type');
+
+const isCacheableURL = url => {
+  const isPathIncluded = cacheablePaths.includes(url.pathname);
+  const isURLMatching = cacheablePattern.test(url);
+  return isPathIncluded || isURLMatching;
+};
 
 /**
  * getResourceTypeHeader receives a Request or Response instance, and returns a
@@ -49,21 +58,21 @@ const getResourceCategory = obj => {
 };
 
 /**
- * shouldHandleRequest receives a Request instance and returns true or false
+ * isRequestCacheable receives a Request instance and returns true or false
  * depending on the properties of its URL and header values.
  *
  * @param {Request} request
  * @return {Boolean}
  * @example
  *
- *    shouldHandleRequest(siteLogoRequest); // => true
- *    shouldHandleRequest(thirdPartyScriptRequest); // => false
+ *    isRequestCacheable(siteLogoRequest); // => true
+ *    isRequestCacheable(thirdPartyScriptRequest); // => false
  */
-const shouldHandleRequest = request => {
+const isRequestCacheable = request => {
   const url = new URL(request.url);
   const criteria = [
-    isCacheUrl(url),
-    isLocalUrl(url),
+    isCacheableURL(url),
+    isLocalURL(url),
     isGetRequest(request)
   ];
   return criteria.every(result => result);
@@ -104,20 +113,52 @@ const cacheAllPaths = (paths, cacheName) => {
   );
 };
 
+/**
+ * cleanupCachedItems finds and deletes cached items that are outdated based on
+ * VERSION. It returns a promise that resolves once all of the items have been
+ * deleted from the cache.
+ *
+ * TODO: Explain this better, and maybe split into two functions.
+ *
+ * @return {Promise}
+ */
+const cleanupCachedItems = () => {
+  return caches.keys().then(cacheKeys => {
+    const expiredKeys = cacheKeys.filter(key => !isCacheName(key));
+    const deletions = expiredKeys.map(key => caches.delete(key));
+    return Promise.all(deletions);
+  });
+};
+
 addEventListener('install', event => {
-  const cacheName = getCacheName('static');
+  const cacheName = toCacheName('static');
   event.waitUntil(
     cacheAllPaths(cacheablePaths, cacheName).then(skipWaiting)
   );
 });
 
 addEventListener('activate', event => {
-  // invalidate old caches
+  event.waitUntil(
+    cleanupCachedItems().then(clients.claim())
+  );
 });
 
 addEventListener('fetch', event => {
   const request = event.request;
-  if (shouldHandleRequest(request)) {
-
+  if (isRequestCacheable(request)) {
+    let category = getResourceCategory(request);
+    let cacheName = toCacheName(category);
+    let respondFn;
+    switch (category) {
+      case 'content':
+        respondFn = fetch(request).then(response => {
+          return cacheRequestedItem(response, request, cacheName)
+        });
+        break;
+      default:
+        respondFn = caches.match(request);
+        break;
+    }
+    event.respondWith(respondFn);
   }
 });

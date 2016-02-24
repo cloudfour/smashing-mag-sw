@@ -1,5 +1,5 @@
 import test from 'ava';
-import SMCacheUtils from './public/SMCacheUtils';
+import SMCacheUtils from './SMCacheUtils';
 
 test('isStyleSheetUrl', assert => {
   const { isStyleSheetUrl } = SMCacheUtils;
