@@ -10,13 +10,24 @@
 
       body {
         line-height: 1.5;
-        margin: auto;
+        margin: 2.25rem auto;
         max-width: 80%;
       }
 
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
       hr {
-        border: .2rem solid currentcolor;
+        border: 1px solid currentcolor;
+        border-width: thin 0 0;
         margin: 0;
+        opacity: .25;
+      }
+
+      pre {
+        white-space: pre-line;
       }
 
       .FlexEmbed[data-src]::after {
@@ -48,7 +59,7 @@
       }
 
       .u-spaceChildren > * + * {
-        margin-top: 1rem;
+        margin-top: 1.5rem;
       }
 
       .u-textSize1 { font-size: 2.25em; }
@@ -57,16 +68,37 @@
     </style>
   </head>
   <body class="u-spaceChildren">
-    <div class="u-flex">
-      <p class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto u-spaceY">
-        This is a demonstration of Service Worker caching behavior. For each
-        content types presented below (images, fonts, and pages), some items
-        will be cached by a service worker, and retrieved from that cache during
-        future requests.
+    <div class="u-md-size3of4 u-lg-size5of8 u-textSize2 u-spaceAuto u-spaceChildren">
+      <p>
+        This is a demonstration of <code>serviceWorker</code> caching behavior.
+        For each of the image and page samples shown below, some items will be
+        cached by the service worker and retrieved from that cache during future
+        requests.
+      </p>
+      <p>
+        <strong>
+          Be sure to use a
+          <a href="http://caniuse.com/#feat=serviceworkers">
+            <code>serviceWorker</code>-enabled browser</a>.
+        </strong>
       </p>
     </div>
+    <hr>
     <section class="u-spaceChildren">
-      <h1 class="u-textCenter u-textSize1">Images</h1>
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Images</h1>
+        <p class="u-spaceY">
+          The images listed below will be pre-cached when the service worker is
+          first installed. Subsequent requests for them will yield cached
+          responses. The other images will not be handled by the service worker.
+        </p>
+        <pre>
+          /assets/pic1.jpg
+          /assets/pic2.jpg
+          /assets/pic3.jpg
+          /assets/pic4.jpg
+        </pre>
+      </header>
       <h3 class="u-textCenter u-textSize2">Cached</h3>
       <div class="Grid">
         <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
@@ -121,40 +153,85 @@
           </figure>
         </div>
       </div>
-      <div class="u-textCenter">
-        <button class="Button u-space" onclick="reloadImages()">Reload</button>
+    </section>
+    <hr>
+    <section class="u-spaceChildren">
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Pages</h1>
+        <p class="u-spaceY">
+          The pages listed below will be cached upon request. Subsequent
+          requests for them will yield cached responses. The other pages will
+          not be handled by the service worker.
+        </p>
+        <pre>
+          /pages/page1.html
+          /pages/page2.html
+        </pre>
+      </header>
+      <h3 class="u-textCenter u-textSize2">Cached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page1.html"></iframe>
+          </div>
+        </div>
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page2.html"></iframe>
+          </div>
+        </div>
+      </div>
+      <h3 class="u-textCenter u-textSize2">Uncached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page3.html"></iframe>
+          </div>
+        </div>
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page4.html"></iframe>
+          </div>
+        </div>
       </div>
     </section>
     <hr>
     <section class="u-spaceChildren">
-      <h1 class="u-textCenter u-textSize1">Pages</h1>
-      <h3 class="u-textCenter u-textSize2">Cached</h3>
-      <div class="Grid">
-
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Debugging</h1>
+        <p class="u-spaceY">
+          The results of the service worker's actions can be examined and
+          modified using browser developer tools. Here are some examples using
+          Chrome:
+        </p>
+      </header>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Mimicking slow connections</h3>
+        <img class="u-spaceAuto" src="assets/debug-throttling.png">
       </div>
-      <h3 class="u-textCenter u-textSize2">Uncached</h3>
-      <div class="Grid">
-
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Uninstalling the service worker</h3>
+        <img class="u-spaceAuto" src="assets/debug-service_worker.png">
+      </div>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Clearing caches</h3>
+        <img class="u-spaceAuto" src="assets/debug-caches.png">
       </div>
     </section>
     <script>
-      function images () {
-        return Array.from(document.images);
-      }
-
-      function reloadImages () {
-        images().forEach(img => {
-          var newImg = img.cloneNode();
-          newImg.src = `${img.src}?${Date.now()}`;
-          img.parentNode.replaceChild(newImg, img);
-        });
-      }
-
       if ('serviceWorker' in navigator) {
+        var elements = tag => Array.from(document.getElementsByTagName(tag));
+        var images = elements.bind(window, 'img');
+        var iframes = elements.bind(window, 'iframe');
+
         navigator.serviceWorker.register('serviceWorker.js');
 
-        images().forEach(img => {
-          img.parentNode.setAttribute('data-src', new URL(img.src).pathname);
+        images().concat(iframes()).forEach(elem => {
+          elem.parentNode.setAttribute('data-src', new URL(elem.src).pathname);
         });
       }
     </script>
