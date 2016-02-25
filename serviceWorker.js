@@ -8,17 +8,21 @@ const cacheablePaths = [
   'suitcss.css',
   'assets/pic1.jpg',
   'assets/pic2.jpg',
-  'assets/pic3.jpg'
+  'assets/pic3.jpg',
+  'assets/pic4.jpg'
 ];
 
+const curry = (fn, ...args) => fn.bind(this, ...args);
 const toCacheName = key => `${VERSION}-${key}`;
 const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
+const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isLocalURL = url => url.origin === location.origin;
+const isLocalURL = curry(isSameOrigin, location);
 const isGetRequest = req => req.method === 'GET';
-const getRequestTypeHeader = req => req.headers.get('Accept');
-const getResponseTypeHeader = res => res.headers.get('Content-Type');
+const getHeader = (name, obj) => obj.headers.get(name);
+const getRequestTypeHeader = curry(getHeader, 'Accept');
+const getResponseTypeHeader = curry(getHeader, 'Content-Type');
 
 const isCacheableURL = url => {
   const isPathIncluded = cacheablePaths.includes(url.pathname);

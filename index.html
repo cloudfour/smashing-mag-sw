@@ -4,38 +4,155 @@
     <title>Smashing Magazie Service Worker</title>
     <link rel="stylesheet" href="suitcss.css">
     <style>
+      * {
+        font-size: inherit;
+      }
+
       body {
+        line-height: 1.5;
         margin: auto;
         max-width: 80%;
       }
 
-      img {
-        display: block;
-        max-width: 100%;
+      hr {
+        border: .2rem solid currentcolor;
+        margin: 0;
+      }
+
+      .FlexEmbed[data-src]::after {
+        background-color: grey;
+        color: lightgrey;
+        content: attr(data-src);
+        font-size: .833em;
+        padding: .25rem .5rem;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .FlexEmbed-content {
+        background-color: grey;
+      }
+
+      .FlexEmbed-ratio--3by2 {
+        padding-bottom: calc(2 / 3 * 100%);
+      }
+
+      .u-pad { padding: .667rem; }
+      .u-space { margin: 1rem; }
+      .u-spaceAuto { margin: auto; }
+
+      .u-spaceY {
+        margin-bottom: 1.5rem;
+        margin-top: 1rem;
       }
 
       .u-spaceChildren > * + * {
         margin-top: 1rem;
       }
+
+      .u-textSize1 { font-size: 2.25em; }
+      .u-textSize2 { font-size: 1.5em; }
+      .u-textSize3 { font-size: 1.25em; }
     </style>
   </head>
   <body class="u-spaceChildren">
-    <div class="Grid Grid--withGutter">
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic1.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic2.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic3.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic4.jpg"></div>
+    <div class="u-flex">
+      <p class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto u-spaceY">
+        This is a demonstration of Service Worker caching behavior. For each
+        content types presented below (images, fonts, and pages), some items
+        will be cached by a service worker, and retrieved from that cache during
+        future requests.
+      </p>
     </div>
-    <div class="Grid Grid--withGutter">
-      <div class="Grid-cell u-size1of4"><img src="assets/pic1.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="assets/pic2.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="assets/pic3.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="assets/pic4.jpg"></div>
-    </div>
+    <section class="u-spaceChildren">
+      <h1 class="u-textCenter u-textSize1">Images</h1>
+      <h3 class="u-textCenter u-textSize2">Cached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic1.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic2.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic3.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic4.jpg">
+          </figure>
+        </div>
+      </div>
+      <h3 class="u-textCenter u-textSize2">Uncached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic5.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic6.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic7.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic8.jpg">
+          </figure>
+        </div>
+      </div>
+      <div class="u-textCenter">
+        <button class="Button u-space" onclick="reloadImages()">Reload</button>
+      </div>
+    </section>
+    <hr>
+    <section class="u-spaceChildren">
+      <h1 class="u-textCenter u-textSize1">Pages</h1>
+      <h3 class="u-textCenter u-textSize2">Cached</h3>
+      <div class="Grid">
+
+      </div>
+      <h3 class="u-textCenter u-textSize2">Uncached</h3>
+      <div class="Grid">
+
+      </div>
+    </section>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('serviceWorker.js', {
-          scope: './'
+        navigator.serviceWorker.register('serviceWorker.js');
+      }
+
+      const images = Array.from(document.images);
+
+      images.forEach(img => {
+        img.parentNode.setAttribute('data-src', new URL(img.src).pathname);
+      });
+
+      function reloadImages () {
+        images.forEach(img => {
+          var newImg = img.cloneNode();
+          newImg.src = `${img.src}?${Date.now()}`;
+          img.parentNode.replaceChild(newImg, img);
         });
       }
     </script>
