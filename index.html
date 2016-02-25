@@ -157,15 +157,15 @@
       </div>
     </section>
     <script>
-      function images () {
-        return Array.from(document.images);
-      }
-
       if ('serviceWorker' in navigator) {
+        var elements = tag => Array.from(document.getElementsByTagName(tag));
+        var images = elements.bind(window, 'img');
+        var iframes = elements.bind(window, 'iframe');
+
         navigator.serviceWorker.register('serviceWorker.js');
 
-        images().forEach(img => {
-          img.parentNode.setAttribute('data-src', new URL(img.src).pathname);
+        images().concat(iframes()).forEach(elem => {
+          elem.parentNode.setAttribute('data-src', new URL(elem.src).pathname);
         });
       }
     </script>
