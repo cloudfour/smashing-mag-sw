@@ -59,8 +59,8 @@
   <body class="u-spaceChildren">
     <div class="u-flex">
       <p class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto u-spaceY">
-        This is a demonstration of Service Worker caching behavior. For each
-        content types presented below (images, fonts, and pages), some items
+        This is a demonstration of Service Worker caching behavior. For each of
+        the content types presented below (images, fonts, and pages), some items
         will be cached by a service worker, and retrieved from that cache during
         future requests.
       </p>
@@ -121,9 +121,6 @@
           </figure>
         </div>
       </div>
-      <div class="u-textCenter">
-        <button class="Button u-space" onclick="reloadImages()">Reload</button>
-      </div>
     </section>
     <hr>
     <section class="u-spaceChildren">
@@ -140,14 +137,6 @@
     <script>
       function images () {
         return Array.from(document.images);
-      }
-
-      function reloadImages () {
-        images().forEach(img => {
-          var newImg = img.cloneNode();
-          newImg.src = `${img.src}?${Date.now()}`;
-          img.parentNode.replaceChild(newImg, img);
-        });
       }
 
       if ('serviceWorker' in navigator) {
