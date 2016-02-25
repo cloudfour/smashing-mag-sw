@@ -5,6 +5,7 @@ importScripts('SMCacheUtils.js');
 const VERSION = '0.0.1';
 const cacheablePattern = /\.html$/;
 const cacheablePaths = [
+  'index.html',
   'suitcss.css',
   'assets/pic1.jpg',
   'assets/pic2.jpg',
@@ -25,7 +26,8 @@ const getRequestTypeHeader = curry(getHeader, 'Accept');
 const getResponseTypeHeader = curry(getHeader, 'Content-Type');
 
 const isCacheableURL = url => {
-  const isPathIncluded = cacheablePaths.includes(url.pathname);
+  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, ''); // TODO: no
+  const isPathIncluded = cacheablePaths.includes(path);
   const isURLMatching = cacheablePattern.test(url);
   return isPathIncluded || isURLMatching;
 };
