@@ -8,7 +8,8 @@ const cacheablePaths = [
   'suitcss.css',
   'assets/pic1.jpg',
   'assets/pic2.jpg',
-  'assets/pic3.jpg'
+  'assets/pic3.jpg',
+  'assets/pic4.jpg'
 ];
 
 const curry = (fn, ...args) => fn.bind(this, ...args);
