@@ -14,8 +14,24 @@
         max-width: 80%;
       }
 
+      hr {
+        border: .2rem solid currentcolor;
+        margin: 0;
+      }
+
+      .FlexEmbed[data-src]::after {
+        background-color: grey;
+        color: lightgrey;
+        content: attr(data-src);
+        font-size: .833em;
+        padding: .25rem .5rem;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
       .FlexEmbed-content {
-        background-color: #eee;
+        background-color: grey;
       }
 
       .FlexEmbed-ratio--3by2 {
@@ -109,13 +125,31 @@
         <button class="Button u-space" onclick="reloadImages()">Reload</button>
       </div>
     </section>
+    <hr>
+    <section class="u-spaceChildren">
+      <h1 class="u-textCenter u-textSize1">Pages</h1>
+      <h3 class="u-textCenter u-textSize2">Cached</h3>
+      <div class="Grid">
+
+      </div>
+      <h3 class="u-textCenter u-textSize2">Uncached</h3>
+      <div class="Grid">
+
+      </div>
+    </section>
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('serviceWorker.js');
       }
 
+      const images = Array.from(document.images);
+
+      images.forEach(img => {
+        img.parentNode.setAttribute('data-src', new URL(img.src).pathname);
+      });
+
       function reloadImages () {
-        Array.from(document.images).forEach(img => {
+        images.forEach(img => {
           var newImg = img.cloneNode();
           newImg.src = `${img.src}?${Date.now()}`;
           img.parentNode.replaceChild(newImg, img);
