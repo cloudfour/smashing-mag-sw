@@ -138,21 +138,23 @@
       </div>
     </section>
     <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('serviceWorker.js');
+      function images () {
+        return Array.from(document.images);
       }
 
-      const images = Array.from(document.images);
-
-      images.forEach(img => {
-        img.parentNode.setAttribute('data-src', new URL(img.src).pathname);
-      });
-
       function reloadImages () {
-        images.forEach(img => {
+        images().forEach(img => {
           var newImg = img.cloneNode();
           newImg.src = `${img.src}?${Date.now()}`;
           img.parentNode.replaceChild(newImg, img);
+        });
+      }
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('serviceWorker.js');
+
+        images().forEach(img => {
+          img.parentNode.setAttribute('data-src', new URL(img.src).pathname);
         });
       }
     </script>
