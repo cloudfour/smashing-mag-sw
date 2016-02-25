@@ -3,7 +3,7 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
-const cacheablePattern = /\.html$/;
+const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
   'index.html',
   'suitcss.css',
