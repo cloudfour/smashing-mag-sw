@@ -14,6 +14,11 @@
         max-width: 80%;
       }
 
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
       hr {
         border: 1px solid currentcolor;
         border-width: thin 0 0;
@@ -192,6 +197,29 @@
             <iframe class="FlexEmbed-content" src="pages/page4.html"></iframe>
           </div>
         </div>
+      </div>
+    </section>
+    <hr>
+    <section class="u-spaceChildren">
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Debugging</h1>
+        <p class="u-spaceY">
+          The results of the service worker's actions can be examined and
+          modified using browser developer tools. Here are some examples using
+          Chrome:
+        </p>
+      </header>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Mimicking slow connections</h3>
+        <img class="u-spaceAuto" src="assets/debug-throttling.png">
+      </div>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Uninstalling the service worker</h3>
+        <img class="u-spaceAuto" src="assets/debug-service_worker.png">
+      </div>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Clearing caches</h3>
+        <img class="u-spaceAuto" src="assets/debug-caches.png">
       </div>
     </section>
     <script>
