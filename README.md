@@ -1,7 +1,16 @@
 ## Smashing Magazine Service Worker
 
-**This is a demo area for our Smashing Magazine service worker.**
+This repository is for the early development of a service worker for https://www.smashingmagazine.com.
 
-`npm start` starts a server at <http://localhost:8080>.
+### Core files
 
-`npm test` runs unit tests on the utility functions used by the worker.
+- [serviceWorker.js](serviceWorker.js)
+- [SMCacheUtils.js](SMCacheUtils.js)
+
+### Running locally
+
+0. `git clone git@github.com:cloudfour/smashing-mag-sw.git`
+0. `cd smashing-mag-sw`
+0. `npm install`
+0. `npm start`
+0. <http://localhost:8080>
