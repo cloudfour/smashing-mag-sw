@@ -5,7 +5,6 @@ importScripts('SMCacheUtils.js');
 const VERSION = '0.0.1';
 const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
-  'index.html',
   'suitcss.css',
   'assets/pic1.jpg',
   'assets/pic2.jpg',
