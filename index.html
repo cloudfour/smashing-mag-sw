@@ -19,6 +19,10 @@
         margin: 0;
       }
 
+      pre {
+        white-space: pre-line;
+      }
+
       .FlexEmbed[data-src]::after {
         background-color: grey;
         color: lightgrey;
@@ -58,15 +62,27 @@
   </head>
   <body class="u-spaceChildren">
     <div class="u-flex">
-      <p class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto u-spaceY">
-        This is a demonstration of Service Worker caching behavior. For each of
-        the content types presented below (images, fonts, and pages), some items
-        will be cached by a service worker, and retrieved from that cache during
-        future requests.
+      <p class="u-md-size3of4 u-lg-size5of8 u-textSize2 u-spaceAuto u-spaceY">
+        This is a demonstration of service worker caching behavior. For each of
+        the image and page samples shown below, some items will be cached by the
+        service worker and retrieved from that cache during future requests.
       </p>
     </div>
     <section class="u-spaceChildren">
-      <h1 class="u-textCenter u-textSize1">Images</h1>
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Images</h1>
+        <p class="u-spaceY">
+          The images listed below will be pre-cached when the service worker is
+          first installed. Subsequent requests for them will yield cached
+          responses. The other images will not be handled by the service worker.
+        </p>
+        <pre>
+          /assets/pic1.jpg
+          /assets/pic2.jpg
+          /assets/pic3.jpg
+          /assets/pic4.jpg
+        </pre>
+      </header>
       <h3 class="u-textCenter u-textSize2">Cached</h3>
       <div class="Grid">
         <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
@@ -124,7 +140,18 @@
     </section>
     <hr>
     <section class="u-spaceChildren">
-      <h1 class="u-textCenter u-textSize1">Pages</h1>
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Pages</h1>
+        <p class="u-spaceY">
+          The pages listed below will be cached upon request. Subsequent
+          requests for them will yield cached responses. The other pages will
+          not be handled by the service worker.
+        </p>
+        <pre>
+          /pages/page1.html
+          /pages/page2.html
+        </pre>
+      </header>
       <h3 class="u-textCenter u-textSize2">Cached</h3>
       <div class="Grid">
         <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
