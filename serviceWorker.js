@@ -3,25 +3,30 @@
 importScripts('SMCacheUtils.js');
 
 const VERSION = '0.0.1';
-const cacheablePattern = /\.html$/;
+const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
-  '/suitcss.css',
-  '/assets/pic1.jpg',
-  '/assets/pic2.jpg',
-  '/assets/pic3.jpg',
+  'suitcss.css',
+  'assets/pic1.jpg',
+  'assets/pic2.jpg',
+  'assets/pic3.jpg',
+  'assets/pic4.jpg'
 ];
 
+const curry = (fn, ...args) => fn.bind(this, ...args);
 const toCacheName = key => `${VERSION}-${key}`;
 const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
+const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isLocalURL = url => url.origin === location.origin;
-const isGetRequest = request => request.method === 'GET';
-const getRequestTypeHeader = request => request.headers.get('Accept');
-const getResponseTypeHeader = response => response.headers.get('Content-Type');
+const isLocalURL = curry(isSameOrigin, location);
+const isGetRequest = req => req.method === 'GET';
+const getHeader = (name, obj) => obj.headers.get(name);
+const getRequestTypeHeader = curry(getHeader, 'Accept');
+const getResponseTypeHeader = curry(getHeader, 'Content-Type');
 
 const isCacheableURL = url => {
-  const isPathIncluded = cacheablePaths.includes(url.pathname);
+  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, ''); // TODO: no
+  const isPathIncluded = cacheablePaths.includes(path);
   const isURLMatching = cacheablePattern.test(url);
   return isPathIncluded || isURLMatching;
 };
@@ -152,7 +157,7 @@ addEventListener('fetch', event => {
     switch (category) {
       case 'content':
         respondFn = fetch(request).then(response => {
-          return cacheRequestedItem(response, request, cacheName)
+          return cacheRequestedItem(request, response, cacheName)
         });
         break;
       default:

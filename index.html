@@ -4,8 +4,13 @@
     <title>Smashing Magazie Service Worker</title>
     <link rel="stylesheet" href="suitcss.css">
     <style>
+      * {
+        font-size: inherit;
+      }
+
       body {
-        margin: auto;
+        line-height: 1.5;
+        margin: 2.25rem auto;
         max-width: 80%;
       }
 
@@ -14,28 +19,219 @@
         max-width: 100%;
       }
 
-      .u-spaceChildren > * + * {
+      hr {
+        border: 1px solid currentcolor;
+        border-width: thin 0 0;
+        margin: 0;
+        opacity: .25;
+      }
+
+      pre {
+        white-space: pre-line;
+      }
+
+      .FlexEmbed[data-src]::after {
+        background-color: grey;
+        color: lightgrey;
+        content: attr(data-src);
+        font-size: .833em;
+        padding: .25rem .5rem;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .FlexEmbed-content {
+        background-color: grey;
+      }
+
+      .FlexEmbed-ratio--3by2 {
+        padding-bottom: calc(2 / 3 * 100%);
+      }
+
+      .u-pad { padding: .667rem; }
+      .u-space { margin: 1rem; }
+      .u-spaceAuto { margin: auto; }
+
+      .u-spaceY {
+        margin-bottom: 1.5rem;
         margin-top: 1rem;
       }
+
+      .u-spaceChildren > * + * {
+        margin-top: 1.5rem;
+      }
+
+      .u-textSize1 { font-size: 2.25em; }
+      .u-textSize2 { font-size: 1.5em; }
+      .u-textSize3 { font-size: 1.25em; }
     </style>
   </head>
   <body class="u-spaceChildren">
-    <div class="Grid Grid--withGutter">
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic1.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic2.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic3.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="https://dl.dropboxusercontent.com/u/48589/cloud789324hasd/pic4.jpg"></div>
+    <div class="u-md-size3of4 u-lg-size5of8 u-textSize2 u-spaceAuto u-spaceChildren">
+      <p>
+        This is a demonstration of <code>serviceWorker</code> caching behavior.
+        For each of the image and page samples shown below, some items will be
+        cached by the service worker and retrieved from that cache during future
+        requests.
+      </p>
+      <p>
+        <strong>
+          Be sure to use a
+          <a href="http://caniuse.com/#feat=serviceworkers">
+            <code>serviceWorker</code>-enabled browser</a>.
+        </strong>
+      </p>
     </div>
-    <div class="Grid Grid--withGutter">
-      <div class="Grid-cell u-size1of4"><img src="assets/pic1.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="assets/pic2.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="assets/pic3.jpg"></div>
-      <div class="Grid-cell u-size1of4"><img src="assets/pic4.jpg"></div>
-    </div>
+    <hr>
+    <section class="u-spaceChildren">
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Images</h1>
+        <p class="u-spaceY">
+          The images listed below will be pre-cached when the service worker is
+          first installed. Subsequent requests for them will yield cached
+          responses. The other images will not be handled by the service worker.
+        </p>
+        <pre>
+          /assets/pic1.jpg
+          /assets/pic2.jpg
+          /assets/pic3.jpg
+          /assets/pic4.jpg
+        </pre>
+      </header>
+      <h3 class="u-textCenter u-textSize2">Cached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic1.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic2.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic3.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic4.jpg">
+          </figure>
+        </div>
+      </div>
+      <h3 class="u-textCenter u-textSize2">Uncached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic5.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic6.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic7.jpg">
+          </figure>
+        </div>
+        <div class="Grid-cell u-size1of2 u-lg-size1of4 u-pad">
+          <figure class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <img class="FlexEmbed-content" src="assets/pic8.jpg">
+          </figure>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="u-spaceChildren">
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Pages</h1>
+        <p class="u-spaceY">
+          The pages listed below will be cached upon request. Subsequent
+          requests for them will yield cached responses. The other pages will
+          not be handled by the service worker.
+        </p>
+        <pre>
+          /pages/page1.html
+          /pages/page2.html
+        </pre>
+      </header>
+      <h3 class="u-textCenter u-textSize2">Cached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page1.html"></iframe>
+          </div>
+        </div>
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page2.html"></iframe>
+          </div>
+        </div>
+      </div>
+      <h3 class="u-textCenter u-textSize2">Uncached</h3>
+      <div class="Grid">
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page3.html"></iframe>
+          </div>
+        </div>
+        <div class="Grid-cell u-md-size1of2 u-lg-size1of2 u-pad">
+          <div class="FlexEmbed">
+            <div class="FlexEmbed-ratio FlexEmbed-ratio--3by2"></div>
+            <iframe class="FlexEmbed-content" src="pages/page4.html"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+    <hr>
+    <section class="u-spaceChildren">
+      <header class="u-md-size3of4 u-lg-size5of8 u-textSize3 u-spaceAuto">
+        <h1 class="u-textCenter u-textSize1">Debugging</h1>
+        <p class="u-spaceY">
+          The results of the service worker's actions can be examined and
+          modified using browser developer tools. Here are some examples using
+          Chrome:
+        </p>
+      </header>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Mimicking slow connections</h3>
+        <img class="u-spaceAuto" src="assets/debug-throttling.png">
+      </div>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Uninstalling the service worker</h3>
+        <img class="u-spaceAuto" src="assets/debug-service_worker.png">
+      </div>
+      <div class="u-textCenter">
+        <h3 class="u-textSize3">Clearing caches</h3>
+        <img class="u-spaceAuto" src="assets/debug-caches.png">
+      </div>
+    </section>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('serviceWorker.js', {
-          scope: '/'
+        var elements = tag => Array.from(document.getElementsByTagName(tag));
+        var images = elements.bind(window, 'img');
+        var iframes = elements.bind(window, 'iframe');
+
+        navigator.serviceWorker.register('serviceWorker.js');
+
+        images().concat(iframes()).forEach(elem => {
+          elem.parentNode.setAttribute('data-src', new URL(elem.src).pathname);
         });
       }
     </script>
