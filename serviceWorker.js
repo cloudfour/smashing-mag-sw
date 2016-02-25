@@ -158,7 +158,7 @@ addEventListener('fetch', event => {
     switch (category) {
       case 'content':
         respondFn = fetch(request).then(response => {
-          return cacheRequestedItem(response, request, cacheName)
+          return cacheRequestedItem(request, response, cacheName)
         });
         break;
       default:
