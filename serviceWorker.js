@@ -26,44 +26,6 @@ const getRequestTypeHeader = curry(getHeader, 'Accept');
 const getResponseTypeHeader = curry(getHeader, 'Content-Type');
 
 /**
- * openCache optionally receives one or more string arguments used to construct
- * a key for caches.open(). If no arguments are supplied, the `VERSION` constant
- * alone will be used as the cache key.
- *
- * @param {...String}
- * @return {Promise}
- * @example
- *
- *    openCache('images').then(cache => ...); // key is "0.0.0-images"
- */
-const openCache = (...args) => {
-  const key = [VERSION].concat(args).join('-');
-  return caches.open(key);
-};
-
-/**
- * isCacheableURL receives a URL instance and returns true or false depending on
- * whether or not:
- *
- * - its pathname exists within the `cacheablePaths` array
- * - its value matches the `cacheablePattern` regex
- *
- * TODO: Clean up that nasty replacement regex (for GH Pages)
- *
- * @param {URL}
- * @return {Boolean}
- * @example
- *
- *    isCacheableURL(new URL('example.com/nope')); // => false
- */
-const isCacheableURL = url => {
-  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, '');
-  const isPathIncluded = cacheablePaths.includes(path);
-  const isURLMatching = cacheablePattern.test(url);
-  return isPathIncluded || isURLMatching;
-};
-
-/**
  * getResourceTypeHeader receives a Request or Response instance, and it returns
  * a header value indicating the MIME-type of that object.
  *
@@ -101,6 +63,28 @@ const contentType = obj => {
 };
 
 /**
+ * isCacheableURL receives a URL instance and returns true or false depending on
+ * whether or not:
+ *
+ * - its pathname exists within the `cacheablePaths` array
+ * - its value matches the `cacheablePattern` regex
+ *
+ * TODO: Clean up that nasty replacement regex (for GH Pages)
+ *
+ * @param {URL}
+ * @return {Boolean}
+ * @example
+ *
+ *    isCacheableURL(new URL('example.com/nope')); // => false
+ */
+const isCacheableURL = url => {
+  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, '');
+  const isPathIncluded = cacheablePaths.includes(path);
+  const isURLMatching = cacheablePattern.test(url);
+  return isPathIncluded || isURLMatching;
+};
+
+/**
  * isRequestCacheable receives a Request instance and returns true or false
  * depending on the properties of its URL and header values.
  *
@@ -119,6 +103,22 @@ const isRequestCacheable = request => {
     isGetRequest(request)
   ];
   return criteria.every(result => result);
+};
+
+/**
+ * openCache optionally receives one or more string arguments used to construct
+ * a key for caches.open(). If no arguments are supplied, the `VERSION` constant
+ * alone will be used as the cache key.
+ *
+ * @param {...String}
+ * @return {Promise}
+ * @example
+ *
+ *    openCache('images').then(cache => ...); // key is "0.0.0-images"
+ */
+const openCache = (...args) => {
+  const key = [VERSION].concat(args).join('-');
+  return caches.open(key);
 };
 
 /**
