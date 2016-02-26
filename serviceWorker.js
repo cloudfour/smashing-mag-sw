@@ -115,86 +115,54 @@ const isRequestCacheable = request => {
 };
 
 /**
- * cacheRequestedItem adds to or updates the cache with a new Response before
- * returning it.
- *
- * TODO: Explain this better.
- *
- * @param {Request} request
- * @param {Response} response
- * @param {String} cacheName
- * @return {Response}
+ * This is the installation handler. It runs when the worker is first installed.
+ * It precaches the asset paths in the `cacheablePaths` array.
  */
-const cacheRequestedItem = (request, response, cacheName) => {
-  const responseClone = response.clone();
-  caches.open(cacheName).then(
-    cache => cache.put(request, responseClone)
-  );
-  return response;
-};
-
-/**
- * cacheAllPaths receives an array of filepaths to cache all at once. It returns
- * a promise that will resolve when those items have been cached.
- *
- * TODO: Explain this better.
- *
- * @param {Array} paths
- * @param {String} cacheName
- * @return {Promise}
- */
-const cacheAllPaths = (paths, cacheName) => {
-  return caches.open(cacheName).then(
-    cache => cache.addAll(paths)
-  );
-};
-
-/**
- * cleanupCachedItems finds and deletes cached items that are outdated based on
- * VERSION. It returns a promise that resolves once all of the items have been
- * deleted from the cache.
- *
- * TODO: Explain this better, and maybe split into two functions.
- *
- * @return {Promise}
- */
-const cleanupCachedItems = () => {
-  return caches.keys().then(cacheKeys => {
-    const expiredKeys = cacheKeys.filter(key => !isCacheName(key));
-    const deletions = expiredKeys.map(key => caches.delete(key));
-    return Promise.all(deletions);
-  });
-};
-
 addEventListener('install', event => {
-  const cacheName = toCacheName('static');
   event.waitUntil(
-    cacheAllPaths(cacheablePaths, cacheName).then(skipWaiting)
+    openCache('static')
+      .then(cache => cache.addAll(cacheablePaths))
+      .then(skipWaiting)
   );
 });
 
+/**
+ * This is the activation handler. It runs after the worker is installed. It
+ * handles the deletion of stale cache responses.
+ */
 addEventListener('activate', event => {
   event.waitUntil(
-    cleanupCachedItems().then(clients.claim())
+    caches.keys()
+      .then(keys => {
+        const isExpired = k => !isCacheName(k);
+        const deletions = keys.filter(isExpired).map(k => caches.delete(k));
+        return Promise.all(deletions);
+      })
+      .then(clients.claim())
   );
 });
 
 addEventListener('fetch', event => {
   const request = event.request;
   if (isRequestCacheable(request)) {
-    let category = getResourceCategory(request);
-    let cacheName = toCacheName(category);
-    let respondFn;
-    switch (category) {
-      case 'content':
-        respondFn = fetch(request).then(response => {
-          return cacheRequestedItem(request, response, cacheName)
-        });
-        break;
-      default:
-        respondFn = caches.match(request);
-        break;
-    }
-    event.respondWith(respondFn);
+    event.respondWith(
+      /**
+       * This is tricky:
+       * https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage/match
+       * Opposed to these docs, .match() does not seem to throw anything when no
+       * matching items are found. So instead of using .catch() here, we use
+       * .then() and check the value of response (which could be undefined).
+       */
+      caches.match(request).then(response => {
+        // The request was found in the cache; return it.
+        if (isResponse(response)) {
+          return response;
+        }
+        // The request wasn't found; add it to (and return it from) the cache.
+        return openCache()
+          .then(cache => cache.add(request))
+          .then(() => caches.match(request))
+      })
+    );
   }
 });
