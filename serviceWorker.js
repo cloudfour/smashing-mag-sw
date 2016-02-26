@@ -85,17 +85,17 @@ const isCacheableURL = url => {
 };
 
 /**
- * isRequestCacheable receives a Request instance and returns true or false
+ * isCacheableRequest receives a Request instance and returns true or false
  * depending on the properties of its URL and header values.
  *
  * @param {Request} request
  * @return {Boolean}
  * @example
  *
- *    isRequestCacheable(siteLogoRequest); // => true
- *    isRequestCacheable(thirdPartyScriptRequest); // => false
+ *    isCacheableRequest(siteLogoRequest); // => true
+ *    isCacheableRequest(thirdPartyScriptRequest); // => false
  */
-const isRequestCacheable = request => {
+const isCacheableRequest = request => {
   const url = new URL(request.url);
   const criteria = [
     isCacheableURL(url),
@@ -151,12 +151,12 @@ self.addEventListener('activate', event => {
 
 /**
  * This is the fetch handler. It runs upon every request, but it only acts upon
- * requests that return true when passed to `isRequestCacheable`. It both
+ * requests that return true when passed to `isCacheableRequest`. It both
  * serves requests from the cache and adds requests to the cache.
  */
 self.addEventListener('fetch', event => {
   const request = event.request;
-  if (isRequestCacheable(request)) {
+  if (isCacheableRequest(request)) {
     event.respondWith(
       /**
        * This is tricky:
