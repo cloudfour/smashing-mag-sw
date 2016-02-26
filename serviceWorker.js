@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const VERSION = '0.0.1';
+const VERSION = '0.0.2';
 const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
   'suitcss.css',
