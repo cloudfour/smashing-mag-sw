@@ -1,8 +1,9 @@
+/**
+ * @ignore
+ */
 'use strict';
 
-importScripts('SMCacheUtils.js');
-
-const VERSION = '0.0.1';
+const VERSION = '0.0.2';
 const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
   'suitcss.css',
@@ -13,33 +14,23 @@ const cacheablePaths = [
 ];
 
 const curry = (fn, ...args) => fn.bind(this, ...args);
-const toCacheName = key => `${VERSION}-${key}`;
 const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
 const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isLocalURL = curry(isSameOrigin, location);
+const isLocalURL = curry(isSameOrigin, self.location);
 const isGetRequest = req => req.method === 'GET';
 const getHeader = (name, obj) => obj.headers.get(name);
 const getRequestTypeHeader = curry(getHeader, 'Accept');
 const getResponseTypeHeader = curry(getHeader, 'Content-Type');
 
-const isCacheableURL = url => {
-  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, ''); // TODO: no
-  const isPathIncluded = cacheablePaths.includes(path);
-  const isURLMatching = cacheablePattern.test(url);
-  return isPathIncluded || isURLMatching;
-};
-
 /**
- * getResourceTypeHeader receives a Request or Response instance, and returns a
- * header value indicating the MIME-type of that object.
+ * `getResourceTypeHeader()` receives a `Request` or `Response` instance, and it
+ * returns a header value indicating the MIME-type of that object.
  *
  * @param {Request|Response} obj
  * @return {String}
- * @example
- *
- *    getResourceTypeHeader(cssRequest); // => 'text/css'
+ * @example getResourceTypeHeader(cssRequest); // => 'text/css'
  */
 const getResourceTypeHeader = obj => {
   if (isRequest(obj)) return getRequestTypeHeader(obj);
@@ -47,33 +38,54 @@ const getResourceTypeHeader = obj => {
 };
 
 /**
- * getResourceCategory receives a Request or Response instance, and returns a
- * generic category for the MIME-type of that object. See SMCacheUtils.js for
- * the potential category values.
+ * `contentType()` receives a `Request` or `Response` instance, and it returns a
+ * generic string alias for the MIME-type of that object.
  *
  * @param {Request|Response} obj
  * @return {String}
- * @example
- *
- *    getResourceCategory(htmlResponse); // => 'content'
+ * @example contentType(new Request('foo.html')); // => 'content'
  */
-const getResourceCategory = obj => {
+const contentType = obj => {
   const typeHeader = getResourceTypeHeader(obj);
-  return SMCacheUtils.getMIMECategory(typeHeader);
+  const typePatterns = {
+    image: /^image\//,
+    content: /^text\/(html|xml|xhtml)/
+  };
+  return Object.keys(typePatterns).find(key => {
+    const pattern = typePatterns[key];
+    return pattern.test(typeHeader);
+  });
 };
 
 /**
- * isRequestCacheable receives a Request instance and returns true or false
- * depending on the properties of its URL and header values.
+ * `isCacheableURL()` receives a `URL` instance and returns `true` or `false`
+ * depending on whether or not:
+ *
+ * - its `pathname` exists within the `cacheablePaths` array
+ * - its value matches the `cacheablePattern` pattern
+ *
+ * TODO: Clean up that nasty replacement regex (for GH Pages)
+ *
+ * @param {URL} url
+ * @return {Boolean}
+ * @example isCacheableURL(new URL('example.com/nope')); // => false
+ */
+const isCacheableURL = url => {
+  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, '');
+  const isPathIncluded = cacheablePaths.includes(path);
+  const isURLMatching = cacheablePattern.test(url);
+  return isPathIncluded || isURLMatching;
+};
+
+/**
+ * `isCacheableRequest()` receives a `Request` instance and returns `true` or
+ * `false` depending on the properties of its URL and header values.
  *
  * @param {Request} request
  * @return {Boolean}
- * @example
- *
- *    isRequestCacheable(siteLogoRequest); // => true
- *    isRequestCacheable(thirdPartyScriptRequest); // => false
+ * @example isCacheableRequest(new Request('logo.svg')); // => true
  */
-const isRequestCacheable = request => {
+const isCacheableRequest = request => {
   const url = new URL(request.url);
   const criteria = [
     isCacheableURL(url),
@@ -84,86 +96,75 @@ const isRequestCacheable = request => {
 };
 
 /**
- * cacheRequestedItem adds to or updates the cache with a new Response before
- * returning it.
+ * `openCache()` optionally receives one or more string arguments used to
+ * construct a key for `caches.open()`. If no arguments are supplied, the
+ * `VERSION` constant alone will be used as the cache key.
  *
- * TODO: Explain this better.
- *
- * @param {Request} request
- * @param {Response} response
- * @param {String} cacheName
- * @return {Response}
+ * @param {...String} args
+ * @return {Promise}
+ * @example openCache('images').then(cache => ...); // key is "0.0.0-images"
  */
-const cacheRequestedItem = (request, response, cacheName) => {
-  const responseClone = response.clone();
-  caches.open(cacheName).then(
-    cache => cache.put(request, responseClone)
-  );
-  return response;
+const openCache = (...args) => {
+  const key = [VERSION].concat(args).join('-');
+  return caches.open(key);
 };
 
 /**
- * cacheAllPaths receives an array of filepaths to cache all at once. It returns
- * a promise that will resolve when those items have been cached.
- *
- * TODO: Explain this better.
- *
- * @param {Array} paths
- * @param {String} cacheName
- * @return {Promise}
+ * @ignore
+ * This is the installation handler. It runs when the worker is first installed.
+ * It precaches the asset paths in the `cacheablePaths` array.
  */
-const cacheAllPaths = (paths, cacheName) => {
-  return caches.open(cacheName).then(
-    cache => cache.addAll(paths)
+self.addEventListener('install', event => {
+  event.waitUntil(
+    openCache('static')
+      .then(cache => cache.addAll(cacheablePaths))
+      .then(self.skipWaiting)
   );
-};
+});
 
 /**
- * cleanupCachedItems finds and deletes cached items that are outdated based on
- * VERSION. It returns a promise that resolves once all of the items have been
- * deleted from the cache.
- *
- * TODO: Explain this better, and maybe split into two functions.
- *
- * @return {Promise}
+ * @ignore
+ * This is the activation handler. It runs after the worker is installed. It
+ * handles the deletion of stale cache responses.
  */
-const cleanupCachedItems = () => {
-  return caches.keys().then(cacheKeys => {
-    const expiredKeys = cacheKeys.filter(key => !isCacheName(key));
-    const deletions = expiredKeys.map(key => caches.delete(key));
-    return Promise.all(deletions);
-  });
-};
-
-addEventListener('install', event => {
-  const cacheName = toCacheName('static');
+self.addEventListener('activate', event => {
   event.waitUntil(
-    cacheAllPaths(cacheablePaths, cacheName).then(skipWaiting)
+    caches.keys()
+      .then(keys => {
+        const isExpired = k => !isCacheName(k);
+        const deletions = keys.filter(isExpired).map(k => caches.delete(k));
+        return Promise.all(deletions);
+      })
+      .then(self.clients.claim())
   );
 });
 
-addEventListener('activate', event => {
-  event.waitUntil(
-    cleanupCachedItems().then(clients.claim())
-  );
-});
-
-addEventListener('fetch', event => {
+/**
+ * @ignore
+ * This is the fetch handler. It runs upon every request, but it only acts upon
+ * requests that return true when passed to `isCacheableRequest`. It both
+ * serves requests from the cache and adds requests to the cache.
+ *
+ * This is tricky:
+ * https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage/match
+ * `.match()` does not seem to throw anything when no matching items are found.
+ * So instead of using `.catch()` here, we use `.then()` and check the value of
+ * response (which could be undefined).
+ */
+self.addEventListener('fetch', event => {
   const request = event.request;
-  if (isRequestCacheable(request)) {
-    let category = getResourceCategory(request);
-    let cacheName = toCacheName(category);
-    let respondFn;
-    switch (category) {
-      case 'content':
-        respondFn = fetch(request).then(response => {
-          return cacheRequestedItem(request, response, cacheName)
-        });
-        break;
-      default:
-        respondFn = caches.match(request);
-        break;
-    }
-    event.respondWith(respondFn);
+  if (isCacheableRequest(request)) {
+    event.respondWith(
+      caches.match(request).then(response => {
+        // The request was found in the cache; return it.
+        if (isResponse(response)) {
+          return response;
+        }
+        // The request wasn't found; add it to (and return it from) the cache.
+        return openCache(contentType(request))
+          .then(cache => cache.add(request))
+          .then(() => caches.match(request));
+      })
+    );
   }
 });
