@@ -1,7 +1,5 @@
 'use strict';
 
-importScripts('SMCacheUtils.js');
-
 const VERSION = '0.0.1';
 const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
@@ -63,8 +61,8 @@ const isCacheableURL = url => {
 };
 
 /**
- * getResourceTypeHeader receives a Request or Response instance, and returns a
- * header value indicating the MIME-type of that object.
+ * getResourceTypeHeader receives a Request or Response instance, and it returns
+ * a header value indicating the MIME-type of that object.
  *
  * @param {Request|Response} obj
  * @return {String}
@@ -78,19 +76,25 @@ const getResourceTypeHeader = obj => {
 };
 
 /**
- * getResourceCategory receives a Request or Response instance, and returns a
- * generic category for the MIME-type of that object. See SMCacheUtils.js for
- * the potential category values.
+ * contentType receives a Request or Response instance, and it returns a generic
+ * string alias for the MIME-type of that object.
  *
  * @param {Request|Response} obj
  * @return {String}
  * @example
  *
- *    getResourceCategory(htmlResponse); // => 'content'
+ *    contentType(new Request('foo.html')); // => 'content'
  */
-const getResourceCategory = obj => {
+const contentType = obj => {
   const typeHeader = getResourceTypeHeader(obj);
-  return SMCacheUtils.getMIMECategory(typeHeader);
+  const typePatterns = {
+    image: /^image\//,
+    content: /^text\/(html|xml|xhtml)/
+  };
+  return Object.keys(typePatterns).find(key => {
+    const pattern = typePatterns[key];
+    return pattern.test(typeHeader);
+  });
 };
 
 /**
@@ -159,7 +163,7 @@ addEventListener('fetch', event => {
           return response;
         }
         // The request wasn't found; add it to (and return it from) the cache.
-        return openCache()
+        return openCache(contentType(request))
           .then(cache => cache.add(request))
           .then(() => caches.match(request))
       })
