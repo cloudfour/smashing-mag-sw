@@ -1,3 +1,7 @@
+/* global self, caches, URL, Request, Response */
+/* eslint indent: [2, 2] */
+/* eslint-env es6 */
+
 'use strict';
 
 const VERSION = '0.0.1';
@@ -11,12 +15,11 @@ const cacheablePaths = [
 ];
 
 const curry = (fn, ...args) => fn.bind(this, ...args);
-const toCacheName = key => `${VERSION}-${key}`;
 const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
 const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isLocalURL = curry(isSameOrigin, location);
+const isLocalURL = curry(isSameOrigin, self.location);
 const isGetRequest = req => req.method === 'GET';
 const getHeader = (name, obj) => obj.headers.get(name);
 const getRequestTypeHeader = curry(getHeader, 'Accept');
@@ -122,11 +125,11 @@ const isRequestCacheable = request => {
  * This is the installation handler. It runs when the worker is first installed.
  * It precaches the asset paths in the `cacheablePaths` array.
  */
-addEventListener('install', event => {
+self.addEventListener('install', event => {
   event.waitUntil(
     openCache('static')
       .then(cache => cache.addAll(cacheablePaths))
-      .then(skipWaiting)
+      .then(self.skipWaiting)
   );
 });
 
@@ -134,7 +137,7 @@ addEventListener('install', event => {
  * This is the activation handler. It runs after the worker is installed. It
  * handles the deletion of stale cache responses.
  */
-addEventListener('activate', event => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => {
@@ -142,11 +145,11 @@ addEventListener('activate', event => {
         const deletions = keys.filter(isExpired).map(k => caches.delete(k));
         return Promise.all(deletions);
       })
-      .then(clients.claim())
+      .then(self.clients.claim())
   );
 });
 
-addEventListener('fetch', event => {
+self.addEventListener('fetch', event => {
   const request = event.request;
   if (isRequestCacheable(request)) {
     event.respondWith(
@@ -165,7 +168,7 @@ addEventListener('fetch', event => {
         // The request wasn't found; add it to (and return it from) the cache.
         return openCache(contentType(request))
           .then(cache => cache.add(request))
-          .then(() => caches.match(request))
+          .then(() => caches.match(request));
       })
     );
   }
