@@ -155,8 +155,6 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (isCacheableRequest(request)) {
     event.respondWith(
-
-       */
       caches.match(request).then(response => {
         // The request was found in the cache; return it.
         if (isResponse(response)) {
