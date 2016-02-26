@@ -149,6 +149,11 @@ self.addEventListener('activate', event => {
   );
 });
 
+/**
+ * This is the fetch handler. It runs upon every request, but it only acts upon
+ * requests that return true when passed to `isRequestCacheable`. It both
+ * serves requests from the cache and adds requests to the cache.
+ */
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (isRequestCacheable(request)) {
