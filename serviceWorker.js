@@ -21,20 +21,18 @@ const isResponse = obj => obj instanceof Response;
 const isLocalURL = curry(isSameOrigin, self.location);
 const isGetRequest = req => req.method === 'GET';
 const getHeader = (name, obj) => obj.headers.get(name);
-const getRequestTypeHeader = curry(getHeader, 'Accept');
-const getResponseTypeHeader = curry(getHeader, 'Content-Type');
 
 /**
- * `getResourceTypeHeader()` receives a `Request` or `Response` instance, and it
+ * `getTypeHeader()` receives a `Request` or `Response` instance, and it
  * returns a header value indicating the MIME-type of that object.
  *
  * @param {Request|Response} obj
  * @return {String}
- * @example getResourceTypeHeader(cssRequest); // => 'text/css'
+ * @example getTypeHeader(cssRequest); // => 'text/css'
  */
-const getResourceTypeHeader = obj => {
-  if (isRequest(obj)) return getRequestTypeHeader(obj);
-  if (isResponse(obj)) return getResponseTypeHeader(obj);
+const getTypeHeader = obj => {
+  if (isRequest(obj)) return getHeader('Accept', obj);
+  if (isResponse(obj)) return getHeader('Content-Type', obj);
 };
 
 /**
@@ -46,7 +44,7 @@ const getResourceTypeHeader = obj => {
  * @example contentType(new Request('foo.html')); // => 'content'
  */
 const contentType = obj => {
-  const typeHeader = getResourceTypeHeader(obj);
+  const typeHeader = getTypeHeader(obj);
   const typePatterns = {
     image: /^image\//,
     content: /^text\/(html|xml|xhtml)/
