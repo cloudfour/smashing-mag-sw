@@ -19,6 +19,7 @@ const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
 const isLocalURL = curry(isSameOrigin, self.location);
+const isCacheableURL = url => cacheablePattern.test(url);
 const isGetRequest = req => req.method === 'GET';
 const getHeader = (name, obj) => obj.headers.get(name);
 
@@ -53,26 +54,6 @@ const contentType = obj => {
     const pattern = typePatterns[key];
     return pattern.test(typeHeader);
   });
-};
-
-/**
- * `isCacheableURL()` receives a `URL` instance and returns `true` or `false`
- * depending on whether or not:
- *
- * - its `pathname` exists within the `cacheablePaths` array
- * - its value matches the `cacheablePattern` pattern
- *
- * TODO: Clean up that nasty replacement regex (for GH Pages)
- *
- * @param {URL} url
- * @return {Boolean}
- * @example isCacheableURL(new URL('example.com/nope')); // => false
- */
-const isCacheableURL = url => {
-  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, '');
-  const isPathIncluded = cacheablePaths.includes(path);
-  const isURLMatching = cacheablePattern.test(url);
-  return isPathIncluded || isURLMatching;
 };
 
 /**
