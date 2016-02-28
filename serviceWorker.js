@@ -7,6 +7,7 @@ const VERSION = '0.0.2';
 const cacheablePattern = /page[1-2]\.html$/;
 const cacheablePaths = [
   'suitcss.css',
+  'assets/logo.svg',
   'assets/pic1.jpg',
   'assets/pic2.jpg',
   'assets/pic3.jpg',
