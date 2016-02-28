@@ -38,8 +38,6 @@ const requiredPaths = [
 ];
 
 const curry = (fn, ...args) => fn.bind(this, ...args);
-const isRequest = obj => obj instanceof Request;
-const isResponse = obj => obj instanceof Response;
 
 const isPropEq = (prop, ...objs) => {
   return objs.reduce((prev, curr, index) => {
@@ -61,8 +59,8 @@ const getHeader = (name, obj) => obj.headers.get(name);
  * @example getTypeHeader(cssRequest); // => 'text/css'
  */
 const getTypeHeader = obj => {
-  if (isRequest(obj)) return getHeader('Accept', obj);
-  if (isResponse(obj)) return getHeader('Content-Type', obj);
+  if (obj instanceof Request) return getHeader('Accept', obj);
+  if (obj instanceof Response) return getHeader('Content-Type', obj);
 };
 
 /**
@@ -158,7 +156,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.match(request).then(response => {
         // The request was found in the cache; return it.
-        if (isResponse(response)) {
+        if (response instanceof Response) {
           return response;
         }
         // The request wasn't found; add it to (and return it from) the cache.
