@@ -3,9 +3,32 @@
  */
 'use strict';
 
-const VERSION = '0.0.2';
-const cacheablePattern = /page[1-2]\.html$/;
-const cacheablePaths = [
+const VERSION = '0.0.1';
+
+const BUCKETS = [
+  'static',
+  'image',
+  'content'
+];
+
+const BUCKET_PATTERNS = {
+  [BUCKETS[0]]: /^(text|application)\/(css|javascript)/,
+  [BUCKETS[1]]: /^image\//,
+  [BUCKETS[2]]: /^text\/(html|xml|xhtml)/
+};
+
+const CACHEKEY_DELIM = '-';
+
+const CACHEKEY_REGEXP = new RegExp([
+  `(${VERSION.replace(/(\W)/g, '\\$1')})`,
+  CACHEKEY_DELIM,
+  `(${BUCKETS.join('|')})`,
+  `(${CACHEKEY_DELIM}.+)?`
+].join(''));
+
+const cacheablePattern = /(page[1-2]\.html)$/;
+
+const requiredPaths = [
   'suitcss.css',
   'assets/logo.svg',
   'assets/pic1.jpg',
@@ -15,11 +38,16 @@ const cacheablePaths = [
 ];
 
 const curry = (fn, ...args) => fn.bind(this, ...args);
-const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
-const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
 const isRequest = obj => obj instanceof Request;
 const isResponse = obj => obj instanceof Response;
-const isLocalURL = curry(isSameOrigin, self.location);
+
+const isPropEq = (prop, ...objs) => {
+  return objs.reduce((prev, curr, index) => {
+    return prev && curr[prop] === objs[index-1][prop];
+  });
+};
+
+const isLocalURL = curry(isPropEq, 'origin', self.location);
 const isCacheableURL = url => cacheablePattern.test(url);
 const isGetRequest = req => req.method === 'GET';
 const getHeader = (name, obj) => obj.headers.get(name);
@@ -47,14 +75,7 @@ const getTypeHeader = obj => {
  */
 const contentType = obj => {
   const typeHeader = getTypeHeader(obj);
-  const typePatterns = {
-    image: /^image\//,
-    content: /^text\/(html|xml|xhtml)/
-  };
-  return Object.keys(typePatterns).find(key => {
-    const pattern = typePatterns[key];
-    return pattern.test(typeHeader);
-  });
+  return BUCKETS.find(name => BUCKET_PATTERNS[name].test(typeHeader));
 };
 
 /**
@@ -85,19 +106,19 @@ const isCacheableRequest = request => {
  * @example openCache('images').then(cache => ...); // key is "0.0.0-images"
  */
 const openCache = (...args) => {
-  const key = [VERSION].concat(args).join('-');
+  const key = [VERSION].concat(args).join(CACHEKEY_DELIM);
   return caches.open(key);
 };
 
 /**
  * @ignore
  * This is the installation handler. It runs when the worker is first installed.
- * It precaches the asset paths in the `cacheablePaths` array.
+ * It precaches the asset paths in the `requiredPaths` array.
  */
 self.addEventListener('install', event => {
   event.waitUntil(
     openCache('static')
-      .then(cache => cache.addAll(cacheablePaths))
+      .then(cache => cache.addAll(requiredPaths))
       .then(self.skipWaiting)
   );
 });
@@ -111,8 +132,8 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => {
-        const isExpired = k => !isCacheName(k);
-        const deletions = keys.filter(isExpired).map(k => caches.delete(k));
+        const expired = keys.filter(k => !CACHEKEY_REGEXP.test(k));
+        const deletions = expired.map(k => caches.delete(k));
         return Promise.all(deletions);
       })
       .then(self.clients.claim())
