@@ -26,9 +26,9 @@ const CACHEKEY_REGEXP = new RegExp([
   `(${CACHEKEY_DELIM}.+)?`
 ].join(''));
 
-const cacheablePattern = /(page[1-2]\.html)$/;
+const CACHEABLE_REGEX = /(page[1-2]\.html)$/;
 
-const requiredPaths = [
+const REQUIRED_PATHS = [
   'suitcss.css',
   'assets/logo.svg',
   'assets/pic1.jpg',
@@ -46,7 +46,7 @@ const isPropEq = (prop, ...objs) => {
 };
 
 const isLocalURL = curry(isPropEq, 'origin', self.location);
-const isCacheableURL = url => cacheablePattern.test(url);
+const isCacheableURL = url => CACHEABLE_REGEX.test(url);
 const isGetRequest = req => req.method === 'GET';
 const getHeader = (name, obj) => obj.headers.get(name);
 
@@ -111,12 +111,12 @@ const openCache = (...args) => {
 /**
  * @ignore
  * This is the installation handler. It runs when the worker is first installed.
- * It precaches the asset paths in the `requiredPaths` array.
+ * It precaches the asset paths in the `REQUIRED_PATHS` array.
  */
 self.addEventListener('install', event => {
   event.waitUntil(
     openCache('static')
-      .then(cache => cache.addAll(requiredPaths))
+      .then(cache => cache.addAll(REQUIRED_PATHS))
       .then(self.skipWaiting)
   );
 });
