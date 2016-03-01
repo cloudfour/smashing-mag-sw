@@ -206,13 +206,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(request).then((response) => {
         // The request was found in the cache; return it.
-        if (response instanceof Response) {
+        if (is(Response, response)) {
           return response;
+        } else {
+          // The request wasn't found; add it to (and return it from) the cache.
+          return openCache(contentType(request))
+            .then((cache) => cache.add(request))
+            .then(() => caches.match(request));
         }
-        // The request wasn't found; add it to (and return it from) the cache.
-        return openCache(contentType(request))
-          .then((cache) => cache.add(request))
-          .then(() => caches.match(request));
       })
     );
   }
