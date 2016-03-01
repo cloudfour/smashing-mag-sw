@@ -1,4 +1,5 @@
 /**
+ * External scripts
  * @ignore
  */
 'use strict';
@@ -96,12 +97,12 @@ const isCacheableURL = (url) => CACHEABLE_REGEX.test(url);
 const isGetRequest = (req) => req.method === 'GET';
 
 /**
- * `getTypeHeader()` receives a `Request` or `Response` instance, and it
- * returns a header value indicating the MIME-type of that object.
+ * Get the MIME-type of a request or response.
  *
  * @param {Request|Response} obj
  * @return {String}
- * @example getTypeHeader(cssRequest); // => 'text/css'
+ * @example
+ * getTypeHeader(new Request('style.css')); // => 'text/css'
  */
 const getTypeHeader = (obj) => {
   switch (obj.constructor) {
@@ -112,12 +113,13 @@ const getTypeHeader = (obj) => {
 };
 
 /**
- * `contentType()` receives a `Request` or `Response` instance, and it returns a
- * generic string alias for the MIME-type of that object.
+ * Return the content "bucket" type that corresponds with the MIME-type of a
+ * request or response.
  *
  * @param {Request|Response} obj
  * @return {String}
- * @example contentType(new Request('foo.html')); // => 'content'
+ * @example
+ * contentType(new Request('foo.html')); // => 'content'
  */
 const contentType = (obj) => {
   const typeHeader = getTypeHeader(obj);
@@ -125,8 +127,10 @@ const contentType = (obj) => {
 };
 
 /**
- * `isCacheableRequest()` receives a `Request` instance and returns `true` or
- * `false` depending on the properties of its URL and header values.
+ * Determine whether or not a request is "cacheable" based on an array of
+ * predicate functions.
+ *
+ * TODO: Can this be reduced to an `allPass()` utility?
  *
  * @param {Request} request
  * @return {Boolean}
@@ -143,13 +147,17 @@ const isCacheableRequest = (request) => {
 };
 
 /**
- * `openCache()` optionally receives one or more string arguments used to
- * construct a key for `caches.open()`. If no arguments are supplied, the
- * `VERSION` constant alone will be used as the cache key.
+ * Open a cache with a namedspaced key and return its promise.
+ *
+ * The supplied arguments will be combined with the `VERSION` constant to form
+ * a cache key for `caches.open()`.
  *
  * @param {...String} args
  * @return {Promise}
- * @example openCache('images').then(cache => ...); // key is "0.0.0-images"
+ * @example
+ * openCache('images').then((cache) => {
+ *   // do stuff with cache
+ * });
  */
 const openCache = (...args) => {
   const key = [VERSION].concat(args).join(CACHEKEY_DELIM);
@@ -157,9 +165,10 @@ const openCache = (...args) => {
 };
 
 /**
- * @ignore
  * This is the installation handler. It runs when the worker is first installed.
  * It precaches the asset paths in the `REQUIRED_PATHS` array.
+ *
+ * @ignore
  */
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -170,11 +179,12 @@ self.addEventListener('install', (event) => {
 });
 
 /**
- * @ignore
  * This is the activation handler. It runs after the worker is installed. It
  * handles the deletion of stale cache responses.
  *
  * TODO: Why do we invalidate the caches here instead of during the install?
+ *
+ * @ignore
  */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
@@ -189,7 +199,6 @@ self.addEventListener('activate', (event) => {
 });
 
 /**
- * @ignore
  * This is the fetch handler. It runs upon every request, but it only acts upon
  * requests that return true when passed to `isCacheableRequest`. It both
  * serves requests from the cache and adds requests to the cache.
@@ -199,6 +208,8 @@ self.addEventListener('activate', (event) => {
  * `.match()` does not seem to throw anything when no matching items are found.
  * So instead of using `.catch()` here, we use `.then()` and check the value of
  * response (which could be undefined).
+ *
+ * @ignore
  */
 self.addEventListener('fetch', (event) => {
   const request = event.request;
