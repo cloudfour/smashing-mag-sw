@@ -8,18 +8,48 @@ self.importScripts(
   'serviceWorker-precache.js'
 );
 
+/**
+ * This is the version tag for this service worker file. Its value is used as a
+ * prefix for all cache keys. For example, the cache key for image responses
+ * might be named "0.0.1-images". When this worker is activated, all of the
+ * cache keys not prefixed with this exact version will be assumed "outdated"
+ * and deleted.
+ */
 const VERSION = '0.0.1';
 
+/**
+ * This is a map of regular expressions. The keys represent cache "buckets" for
+ * generalized content types. The values are regular expressions that must match
+ * against request MIME-types to determine whether or not they belong in the
+ * corresponding bucket.
+ *
+ * TODO: Make these values real.
+ *
+ * @example
+ * BUCKET_PATTERNS['image'].test('application/json'); // => false
+ */
 const BUCKET_PATTERNS = {
   static: /^(text|application)\/(css|javascript)/,
   image: /^image\//,
   content: /^text\/(html|xml|xhtml)/
 };
 
+/**
+ * This is a shortcut to access the bucket types as an array.
+ */
 const BUCKET_KEYS = Object.keys(BUCKET_PATTERNS);
 
+/**
+ * This is the delimiter used for joining cache key segments.
+ */
 const CACHEKEY_DELIM = '-';
 
+/**
+ * This is the regular expression used to check the validity of cache keys.
+ *
+ * @example
+ * CACHEKEY_REGEXP.toString(); // => '/(0\.0\.1)-(static|image|content)(-.+)?/'
+ */
 const CACHEKEY_REGEXP = new RegExp([
   `(${VERSION.replace(/(\W)/g, '\\$1')})`,
   CACHEKEY_DELIM,
@@ -27,10 +57,42 @@ const CACHEKEY_REGEXP = new RegExp([
   `(${CACHEKEY_DELIM}.+)?`
 ].join(''));
 
+/**
+ * This is the regular expression used to determine whether or not a request
+ * should be handled by the `fetch` event handler.
+ *
+ * TODO: Make this value real.
+ */
 const CACHEABLE_REGEX = /(page[1-2]\.html)$/;
 
+/**
+ * Determine if a URL is "local" or not.
+ *
+ * @param {URL} url
+ * @return {Boolean}
+ * @example
+ * isLocalURL(new URL('http://example.com')); // => false
+ */
 const isLocalURL = curry(isPropEq, 'origin', self.location);
+
+/**
+ * Determine if a URL is "cacheable" or not.
+ *
+ * @param {URL|String} url
+ * @return {Boolean}
+ * @example
+ * isCacheableURL(new URL('http://example.com')); // => false
+ */
 const isCacheableURL = (url) => CACHEABLE_REGEX.test(url);
+
+/**
+ * Determine if a request has a method of "GET" or not.
+ *
+ * @param {Request} req
+ * @return {Boolean}
+ * @example
+ * isGetRequest(new Request('', { method: 'GET' })); // => true
+ */
 const isGetRequest = (req) => req.method === 'GET';
 
 /**
@@ -111,6 +173,8 @@ self.addEventListener('install', (event) => {
  * @ignore
  * This is the activation handler. It runs after the worker is installed. It
  * handles the deletion of stale cache responses.
+ *
+ * TODO: Why do we invalidate the caches here instead of during the install?
  */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
