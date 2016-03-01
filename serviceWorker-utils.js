@@ -20,7 +20,9 @@ const curry = (fn, ...args) => fn.bind(this, ...args);
  * @example
  * is(Request, new Request()); // => true
  */
-const is = (constructr, obj) => obj.constructor === constructr;
+const is = (constructr, obj) => {
+  return obj && obj.constructor === constructr || obj instanceof constructr;
+};
 
 /**
  * Determine if a number of objects share the same property value.
