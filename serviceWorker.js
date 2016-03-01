@@ -5,24 +5,21 @@
 
 const VERSION = '0.0.1';
 
-const BUCKETS = [
-  'static',
-  'image',
-  'content'
-];
 
 const BUCKET_PATTERNS = {
-  [BUCKETS[0]]: /^(text|application)\/(css|javascript)/,
-  [BUCKETS[1]]: /^image\//,
-  [BUCKETS[2]]: /^text\/(html|xml|xhtml)/
+  static: /^(text|application)\/(css|javascript)/,
+  image: /^image\//,
+  content: /^text\/(html|xml|xhtml)/
 };
+
+const BUCKET_KEYS = Object.keys(BUCKET_PATTERNS);
 
 const CACHEKEY_DELIM = '-';
 
 const CACHEKEY_REGEXP = new RegExp([
   `(${VERSION.replace(/(\W)/g, '\\$1')})`,
   CACHEKEY_DELIM,
-  `(${BUCKETS.join('|')})`,
+  `(${BUCKET_KEYS.join('|')})`,
   `(${CACHEKEY_DELIM}.+)?`
 ].join(''));
 
