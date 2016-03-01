@@ -3,8 +3,12 @@
  */
 'use strict';
 
-const VERSION = '0.0.1';
+self.importScripts(
+  'serviceWorker-utils.js',
+  'serviceWorker-precache.js'
+);
 
+const VERSION = '0.0.1';
 
 const BUCKET_PATTERNS = {
   static: /^(text|application)\/(css|javascript)/,
@@ -25,27 +29,9 @@ const CACHEKEY_REGEXP = new RegExp([
 
 const CACHEABLE_REGEX = /(page[1-2]\.html)$/;
 
-const REQUIRED_PATHS = [
-  'suitcss.css',
-  'assets/logo.svg',
-  'assets/pic1.jpg',
-  'assets/pic2.jpg',
-  'assets/pic3.jpg',
-  'assets/pic4.jpg'
-];
-
-const curry = (fn, ...args) => fn.bind(this, ...args);
-
-const isPropEq = (prop, ...objs) => {
-  return objs.reduce((prev, curr, index) => {
-    return prev && curr[prop] === objs[index-1][prop];
-  });
-};
-
 const isLocalURL = curry(isPropEq, 'origin', self.location);
-const isCacheableURL = url => CACHEABLE_REGEX.test(url);
-const isGetRequest = req => req.method === 'GET';
-const getHeader = (name, obj) => obj.headers.get(name);
+const isCacheableURL = (url) => CACHEABLE_REGEX.test(url);
+const isGetRequest = (req) => req.method === 'GET';
 
 /**
  * `getTypeHeader()` receives a `Request` or `Response` instance, and it
@@ -55,9 +41,12 @@ const getHeader = (name, obj) => obj.headers.get(name);
  * @return {String}
  * @example getTypeHeader(cssRequest); // => 'text/css'
  */
-const getTypeHeader = obj => {
-  if (obj instanceof Request) return getHeader('Accept', obj);
-  if (obj instanceof Response) return getHeader('Content-Type', obj);
+const getTypeHeader = (obj) => {
+  switch (obj.constructor) {
+    case Request: return obj.headers.get('Accept');
+    case Response: return obj.headers.get('Content-Type');
+    default: break;
+  }
 };
 
 /**
@@ -68,9 +57,9 @@ const getTypeHeader = obj => {
  * @return {String}
  * @example contentType(new Request('foo.html')); // => 'content'
  */
-const contentType = obj => {
+const contentType = (obj) => {
   const typeHeader = getTypeHeader(obj);
-  return BUCKETS.find(name => BUCKET_PATTERNS[name].test(typeHeader));
+  return BUCKET_KEYS.find((name) => BUCKET_PATTERNS[name].test(typeHeader));
 };
 
 /**
@@ -81,14 +70,14 @@ const contentType = obj => {
  * @return {Boolean}
  * @example isCacheableRequest(new Request('logo.svg')); // => true
  */
-const isCacheableRequest = request => {
+const isCacheableRequest = (request) => {
   const url = new URL(request.url);
   const criteria = [
     isCacheableURL(url),
     isLocalURL(url),
     isGetRequest(request)
   ];
-  return criteria.every(result => result);
+  return criteria.every((result) => result === true);
 };
 
 /**
@@ -110,10 +99,10 @@ const openCache = (...args) => {
  * This is the installation handler. It runs when the worker is first installed.
  * It precaches the asset paths in the `REQUIRED_PATHS` array.
  */
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     openCache('static')
-      .then(cache => cache.addAll(REQUIRED_PATHS))
+      .then((cache) => cache.addAll(REQUIRED_PATHS))
       .then(self.skipWaiting)
   );
 });
@@ -123,12 +112,12 @@ self.addEventListener('install', event => {
  * This is the activation handler. It runs after the worker is installed. It
  * handles the deletion of stale cache responses.
  */
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then(keys => {
-        const expired = keys.filter(k => !CACHEKEY_REGEXP.test(k));
-        const deletions = expired.map(k => caches.delete(k));
+      .then((keys) => {
+        const expired = keys.filter((key) => !CACHEKEY_REGEXP.test(key));
+        const deletions = expired.map((key) => caches.delete(key));
         return Promise.all(deletions);
       })
       .then(self.clients.claim())
@@ -147,18 +136,18 @@ self.addEventListener('activate', event => {
  * So instead of using `.catch()` here, we use `.then()` and check the value of
  * response (which could be undefined).
  */
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (isCacheableRequest(request)) {
     event.respondWith(
-      caches.match(request).then(response => {
+      caches.match(request).then((response) => {
         // The request was found in the cache; return it.
         if (response instanceof Response) {
           return response;
         }
         // The request wasn't found; add it to (and return it from) the cache.
         return openCache(contentType(request))
-          .then(cache => cache.add(request))
+          .then((cache) => cache.add(request))
           .then(() => caches.match(request));
       })
     );
