@@ -16,7 +16,7 @@ self.importScripts(
  * cache keys not prefixed with this exact version will be assumed "outdated"
  * and deleted.
  */
-const VERSION = '0.0.1';
+const VERSION = '0.0.3';
 
 /**
  * This is a map of regular expressions. The keys represent cache "buckets" for
