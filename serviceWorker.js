@@ -1,138 +1,197 @@
 /**
+ * External scripts
  * @ignore
  */
 'use strict';
 
-const VERSION = '0.0.2';
-const cacheablePattern = /page[1-2]\.html$/;
-const cacheablePaths = [
-  'suitcss.css',
-  'assets/pic1.jpg',
-  'assets/pic2.jpg',
-  'assets/pic3.jpg',
-  'assets/pic4.jpg'
-];
-
-const curry = (fn, ...args) => fn.bind(this, ...args);
-const isCacheName = str => str.includes(VERSION, 0); // TODO: make less fragile.
-const isSameOrigin = (objA, objB) => objA.origin === objB.origin;
-const isRequest = obj => obj instanceof Request;
-const isResponse = obj => obj instanceof Response;
-const isLocalURL = curry(isSameOrigin, self.location);
-const isGetRequest = req => req.method === 'GET';
-const getHeader = (name, obj) => obj.headers.get(name);
-const getRequestTypeHeader = curry(getHeader, 'Accept');
-const getResponseTypeHeader = curry(getHeader, 'Content-Type');
+self.importScripts(
+  'serviceWorker-utils.js',
+  'serviceWorker-precache.js'
+);
 
 /**
- * `getResourceTypeHeader()` receives a `Request` or `Response` instance, and it
- * returns a header value indicating the MIME-type of that object.
- *
- * @param {Request|Response} obj
- * @return {String}
- * @example getResourceTypeHeader(cssRequest); // => 'text/css'
+ * This is the version tag for this service worker file. Its value is used as a
+ * prefix for all cache keys. For example, the cache key for image responses
+ * might be named "0.0.1-images". When this worker is activated, all of the
+ * cache keys not prefixed with this exact version will be assumed "outdated"
+ * and deleted.
  */
-const getResourceTypeHeader = obj => {
-  if (isRequest(obj)) return getRequestTypeHeader(obj);
-  if (isResponse(obj)) return getResponseTypeHeader(obj);
+const VERSION = '0.0.1';
+
+/**
+ * This is a map of regular expressions. The keys represent cache "buckets" for
+ * generalized content types. The values are regular expressions that must match
+ * against request MIME-types to determine whether or not they belong in the
+ * corresponding bucket.
+ *
+ * TODO: Make these values real.
+ *
+ * @example
+ * BUCKET_PATTERNS['image'].test('application/json'); // => false
+ */
+const BUCKET_PATTERNS = {
+  static: /^(text|application)\/(css|javascript)/,
+  image: /^image\//,
+  content: /^text\/(html|xml|xhtml)/
 };
 
 /**
- * `contentType()` receives a `Request` or `Response` instance, and it returns a
- * generic string alias for the MIME-type of that object.
- *
- * @param {Request|Response} obj
- * @return {String}
- * @example contentType(new Request('foo.html')); // => 'content'
+ * This is a shortcut to access the bucket types as an array.
  */
-const contentType = obj => {
-  const typeHeader = getResourceTypeHeader(obj);
-  const typePatterns = {
-    image: /^image\//,
-    content: /^text\/(html|xml|xhtml)/
-  };
-  return Object.keys(typePatterns).find(key => {
-    const pattern = typePatterns[key];
-    return pattern.test(typeHeader);
-  });
-};
+const BUCKET_KEYS = Object.keys(BUCKET_PATTERNS);
 
 /**
- * `isCacheableURL()` receives a `URL` instance and returns `true` or `false`
- * depending on whether or not:
+ * This is the delimiter used for joining cache key segments.
+ */
+const CACHEKEY_DELIM = '-';
+
+/**
+ * This is the regular expression used to check the validity of cache keys.
  *
- * - its `pathname` exists within the `cacheablePaths` array
- * - its value matches the `cacheablePattern` pattern
+ * @example
+ * CACHEKEY_REGEXP.toString(); // => '/(0\.0\.1)-(static|image|content)(-.+)?/'
+ */
+const CACHEKEY_REGEXP = new RegExp([
+  `(${VERSION.replace(/(\W)/g, '\\$1')})`,
+  CACHEKEY_DELIM,
+  `(${BUCKET_KEYS.join('|')})`,
+  `(${CACHEKEY_DELIM}.+)?`
+].join(''));
+
+/**
+ * This is the regular expression used to determine whether or not a request
+ * should be handled by the `fetch` event handler.
  *
- * TODO: Clean up that nasty replacement regex (for GH Pages)
+ * TODO: Make this value real.
+ */
+const CACHEABLE_REGEX = /(page[1-2]\.html)$/;
+
+/**
+ * Determine if a URL is "local" or not.
  *
  * @param {URL} url
  * @return {Boolean}
- * @example isCacheableURL(new URL('example.com/nope')); // => false
+ * @example
+ * isLocalURL(new URL('http://example.com')); // => false
  */
-const isCacheableURL = url => {
-  const path = url.pathname.replace(/(\/)(smashing-mag-sw\/)?/, '');
-  const isPathIncluded = cacheablePaths.includes(path);
-  const isURLMatching = cacheablePattern.test(url);
-  return isPathIncluded || isURLMatching;
+const isLocalURL = curry(isPropEq, 'origin', self.location);
+
+/**
+ * Determine if a URL is "cacheable" or not.
+ *
+ * @param {URL|String} url
+ * @return {Boolean}
+ * @example
+ * isCacheableURL(new URL('http://example.com')); // => false
+ */
+const isCacheableURL = (url) => CACHEABLE_REGEX.test(url);
+
+/**
+ * Determine if a request has a method of "GET" or not.
+ *
+ * @param {Request} req
+ * @return {Boolean}
+ * @example
+ * isGetRequest(new Request('', { method: 'GET' })); // => true
+ */
+const isGetRequest = (req) => req.method === 'GET';
+
+/**
+ * Get the MIME-type of a request or response.
+ *
+ * @param {Request|Response} obj
+ * @return {String}
+ * @example
+ * getTypeHeader(new Request('style.css')); // => 'text/css'
+ */
+const getTypeHeader = (obj) => {
+  switch (obj.constructor) {
+    case Request: return obj.headers.get('Accept');
+    case Response: return obj.headers.get('Content-Type');
+    default: break;
+  }
 };
 
 /**
- * `isCacheableRequest()` receives a `Request` instance and returns `true` or
- * `false` depending on the properties of its URL and header values.
+ * Return the content "bucket" type that corresponds with the MIME-type of a
+ * request or response.
+ *
+ * @param {Request|Response} obj
+ * @return {String}
+ * @example
+ * contentType(new Request('foo.html')); // => 'content'
+ */
+const contentType = (obj) => {
+  const typeHeader = getTypeHeader(obj);
+  return BUCKET_KEYS.find((name) => BUCKET_PATTERNS[name].test(typeHeader));
+};
+
+/**
+ * Determine whether or not a request is "cacheable" based on an array of
+ * predicate functions.
+ *
+ * TODO: Can this be reduced to an `allPass()` utility?
  *
  * @param {Request} request
  * @return {Boolean}
  * @example isCacheableRequest(new Request('logo.svg')); // => true
  */
-const isCacheableRequest = request => {
+const isCacheableRequest = (request) => {
   const url = new URL(request.url);
   const criteria = [
     isCacheableURL(url),
     isLocalURL(url),
     isGetRequest(request)
   ];
-  return criteria.every(result => result);
+  return criteria.every((result) => result === true);
 };
 
 /**
- * `openCache()` optionally receives one or more string arguments used to
- * construct a key for `caches.open()`. If no arguments are supplied, the
- * `VERSION` constant alone will be used as the cache key.
+ * Open a cache with a namedspaced key and return its promise.
+ *
+ * The supplied arguments will be combined with the `VERSION` constant to form
+ * a cache key for `caches.open()`.
  *
  * @param {...String} args
  * @return {Promise}
- * @example openCache('images').then(cache => ...); // key is "0.0.0-images"
+ * @example
+ * openCache('images').then((cache) => {
+ *   // do stuff with cache
+ * });
  */
 const openCache = (...args) => {
-  const key = [VERSION].concat(args).join('-');
+  const key = [VERSION].concat(args).join(CACHEKEY_DELIM);
   return caches.open(key);
 };
 
 /**
- * @ignore
  * This is the installation handler. It runs when the worker is first installed.
- * It precaches the asset paths in the `cacheablePaths` array.
+ * It precaches the asset paths in the `REQUIRED_PATHS` array.
+ *
+ * @ignore
  */
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     openCache('static')
-      .then(cache => cache.addAll(cacheablePaths))
+      .then((cache) => cache.addAll(REQUIRED_PATHS))
       .then(self.skipWaiting)
   );
 });
 
 /**
- * @ignore
  * This is the activation handler. It runs after the worker is installed. It
  * handles the deletion of stale cache responses.
+ *
+ * TODO: Why do we invalidate the caches here instead of during the install?
+ *
+ * @ignore
  */
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then(keys => {
-        const isExpired = k => !isCacheName(k);
-        const deletions = keys.filter(isExpired).map(k => caches.delete(k));
+      .then((keys) => {
+        const expired = keys.filter((key) => !CACHEKEY_REGEXP.test(key));
+        const deletions = expired.map((key) => caches.delete(key));
         return Promise.all(deletions);
       })
       .then(self.clients.claim())
@@ -140,7 +199,6 @@ self.addEventListener('activate', event => {
 });
 
 /**
- * @ignore
  * This is the fetch handler. It runs upon every request, but it only acts upon
  * requests that return true when passed to `isCacheableRequest`. It both
  * serves requests from the cache and adds requests to the cache.
@@ -150,20 +208,23 @@ self.addEventListener('activate', event => {
  * `.match()` does not seem to throw anything when no matching items are found.
  * So instead of using `.catch()` here, we use `.then()` and check the value of
  * response (which could be undefined).
+ *
+ * @ignore
  */
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (isCacheableRequest(request)) {
     event.respondWith(
-      caches.match(request).then(response => {
+      caches.match(request).then((response) => {
         // The request was found in the cache; return it.
-        if (isResponse(response)) {
+        if (is(Response, response)) {
           return response;
+        } else {
+          // The request wasn't found; add it to (and return it from) the cache.
+          return openCache(contentType(request))
+            .then((cache) => cache.add(request))
+            .then(() => caches.match(request));
         }
-        // The request wasn't found; add it to (and return it from) the cache.
-        return openCache(contentType(request))
-          .then(cache => cache.add(request))
-          .then(() => caches.match(request));
       })
     );
   }
