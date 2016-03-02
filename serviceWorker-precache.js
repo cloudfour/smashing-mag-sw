@@ -1,7 +1,7 @@
 'use strict';
 
 const REQUIRED_PATHS = [
-  'suitcss.css',
+  'assets/suitcss.css',
   'assets/logo.svg',
   'assets/pic1.jpg',
   'assets/pic2.jpg',
