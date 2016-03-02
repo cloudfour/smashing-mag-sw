@@ -1,11 +1,12 @@
 {
   "name": "smashing-mag-sw",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "http-server ./",
-    "test": "ava test.js"
+    "test": "ava test/index.js",
+    "docs": "doxdox --output docs/README.md --layout markdown"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "homepage": "https://github.com/cloudfour/smashing-mag-sw#readme",
   "devDependencies": {
     "ava": "^0.12.0",
+    "doxdox": "^0.1.10",
     "http-server": "^0.8.5"
   }
 }
