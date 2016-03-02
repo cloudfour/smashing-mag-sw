@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "http-server ./",
-    "test": "ava test.js"
+    "test": "ava test/index.js",
   },
   "repository": {
     "type": "git",

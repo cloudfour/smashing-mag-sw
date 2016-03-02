@@ -1,7 +1,7 @@
 import test from 'ava';
 import 'babel-register'; // Only needed for Node 4 spread support :(
-import SMCacheUtils from './SMCacheUtils';
-import * as utils from './serviceWorker-utils';
+import SMCacheUtils from '../SMCacheUtils';
+import * as utils from '../serviceWorker-utils';
 
 test('isStyleSheetUrl', (assert) => {
   const { isStyleSheetUrl } = SMCacheUtils;
