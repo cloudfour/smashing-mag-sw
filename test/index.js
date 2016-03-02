@@ -1,53 +1,6 @@
 import test from 'ava';
 import 'babel-register'; // Only needed for Node 4 spread support :(
-import SMCacheUtils from '../SMCacheUtils';
 import * as utils from '../serviceWorker-utils';
-
-test('isStyleSheetUrl', (assert) => {
-  const { isStyleSheetUrl } = SMCacheUtils;
-  assert.plan(2);
-  assert.true(
-    isStyleSheetUrl('example.css'),
-    'returns true when given a CSS URL'
-  );
-  assert.false(
-    isStyleSheetUrl('example.txt'),
-    'returns false when given a non-CSS URL'
-  );
-});
-
-test('isScriptUrl', (assert) => {
-  const { isScriptUrl } = SMCacheUtils;
-  assert.plan(2);
-  assert.true(
-    isScriptUrl('example.js'),
-    'returns true when given a JS URL'
-  );
-  assert.false(
-    isScriptUrl('example.txt'),
-    'returns false when given a non-JS URL'
-  );
-});
-
-test('getMIMECategory', (assert) => {
-  const { getMIMECategory } = SMCacheUtils;
-  assert.plan(3);
-  assert.same(
-    getMIMECategory('text/css'),
-    'static',
-    'categorizes CSS as static'
-  );
-  assert.same(
-    getMIMECategory('text/html'),
-    'content',
-    'categorizes HTML as content'
-  );
-  assert.same(
-    getMIMECategory('image/svg+xml'),
-    'image',
-    'categorizes SVG as image'
-  );
-});
 
 test('utils.curry', (assert) => {
   const add = (a, b, c) => a + b + c;
