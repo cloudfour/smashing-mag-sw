@@ -1,4 +1,4 @@
-# [smashing-mag-sw](https://github.com/cloudfour/smashing-mag-sw#readme) *0.0.1*
+# [smashing-mag-sw](https://github.com/cloudfour/smashing-mag-sw#readme) *0.0.3*
 
 
 
