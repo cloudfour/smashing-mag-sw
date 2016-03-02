@@ -5,7 +5,7 @@ This repository is for the early development of a service worker for https://www
 ### Core files
 
 - [serviceWorker.js](serviceWorker.js)
-- [SMCacheUtils.js](SMCacheUtils.js)
+- [serviceWorker-utils.js](serviceWorker-utils.js)
 
 ### Online demo
 
