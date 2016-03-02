@@ -1,7 +1,7 @@
 import test from 'ava';
 import SMCacheUtils from './SMCacheUtils';
 
-test('isStyleSheetUrl', assert => {
+test('isStyleSheetUrl', (assert) => {
   const { isStyleSheetUrl } = SMCacheUtils;
   assert.plan(2);
   assert.true(
@@ -14,7 +14,7 @@ test('isStyleSheetUrl', assert => {
   );
 });
 
-test('isScriptUrl', assert => {
+test('isScriptUrl', (assert) => {
   const { isScriptUrl } = SMCacheUtils;
   assert.plan(2);
   assert.true(
@@ -27,7 +27,7 @@ test('isScriptUrl', assert => {
   );
 });
 
-test('getMIMECategory', assert => {
+test('getMIMECategory', (assert) => {
   const { getMIMECategory } = SMCacheUtils;
   assert.plan(3);
   assert.same(
