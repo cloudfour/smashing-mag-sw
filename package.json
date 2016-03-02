@@ -19,6 +19,7 @@
   "homepage": "https://github.com/cloudfour/smashing-mag-sw#readme",
   "devDependencies": {
     "ava": "^0.12.0",
+    "doxdox": "^0.1.10",
     "http-server": "^0.8.5"
   }
 }
