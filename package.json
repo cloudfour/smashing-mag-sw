@@ -6,6 +6,7 @@
   "scripts": {
     "start": "http-server ./",
     "test": "ava test/index.js",
+    "docs": "doxdox --output docs/README.md --layout markdown"
   },
   "repository": {
     "type": "git",
